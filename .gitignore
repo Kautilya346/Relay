@@ -1,0 +1,6 @@
+.pytest_cache/
+__pycache__/
+venv/
+.env
+.json
+backend/jansahayak-506109-5418bf60ccd0.json
