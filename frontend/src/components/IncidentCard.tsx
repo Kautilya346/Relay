@@ -7,6 +7,7 @@ interface IncidentCardProps {
   incident: Incident;
   onSelect: (incident: Incident) => void;
   onAction?: (incident: Incident) => void;
+  onOpenBrowser?: (incident: Incident) => void;
   showActionBtn?: boolean;
 }
 
@@ -14,6 +15,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
   onSelect,
   onAction,
+  onOpenBrowser,
   showActionBtn = true,
 }) => {
   const getBadgeClass = () => {
@@ -80,13 +82,23 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
       </div>
 
       {/* Footer Info */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-glass)', fontSize: '0.78rem', color: 'var(--text-dim)' }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-glass)', fontSize: '0.78rem', color: 'var(--text-dim)', flexWrap: 'wrap', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
           <MapPin size={12} />
           <span>{incident.authorityId.replace(/_/g, ' ')}</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+          {onOpenBrowser && (
+            <button
+              onClick={() => onOpenBrowser(incident)}
+              className="glass-button"
+              style={{ fontSize: '0.75rem', padding: '0.3rem 0.6rem', color: '#2dd4bf', borderColor: 'rgba(20, 184, 166, 0.4)' }}
+              title="Launch Playwright Browser Automation Worker"
+            >
+              🌐 Browser Worker
+            </button>
+          )}
           <button onClick={() => onSelect(incident)} className="glass-button" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}>
             View Details
           </button>
@@ -100,3 +112,4 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
     </div>
   );
 };
+

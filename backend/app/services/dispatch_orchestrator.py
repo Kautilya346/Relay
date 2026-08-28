@@ -1,5 +1,6 @@
 import logging
 from typing import Dict, Any, Optional
+from app.core.config import settings
 from app.models.domain import IncidentModel, ComplaintModel
 from app.adapters.email import VerifiedInstitutionalEmailAdapter
 from app.agents.portal_discovery import discover_authority_portal
@@ -35,7 +36,8 @@ class IntelligentDispatchOrchestrator:
         }
 
         # 1. Primary Method: Institutional Email Dispatch
-        target_email = recipient_email or f"grievance.{incident.authorityId.lower()}@municipal.gov.in"
+        target_email = settings.TARGET_GRIEVANCE_EMAIL or recipient_email or f"grievance.{incident.authorityId.lower()}@municipal.gov.in"
+
         loc_label = getattr(incident, 'ward', None) or f"Ward Area near ({incident.centerLocation.latitude:.3f}, {incident.centerLocation.longitude:.3f})"
         composed_notice = compose_evidence_based_complaint(incident, loc_label)
         
@@ -83,12 +85,14 @@ class IntelligentDispatchOrchestrator:
                         portal_url=discovery_res.portalUrl,
                     )
                     results["browserSession"] = {
-                        "sessionId": session.id,
-                        "currentStep": session.current_step,
-                        "human_state": session.human_state,
-                        "portal_url": session.portal_url,
+                        "sessionId": session.sessionId,
+                        "state": session.state.value if hasattr(session.state, 'value') else str(session.state),
+                        "portalUrl": session.currentUrl,
+                        "message": session.message,
+                        "filledFields": session.filledFields,
                     }
-                    logger.info(f"[Tertiary Dispatch - Browser Automation] Initialized session {session.id} for {discovery_res.portalUrl}")
+                    logger.info(f"[Tertiary Dispatch - Browser Automation] Initialized session {session.sessionId} for {discovery_res.portalUrl}")
+
                 except Exception as b_err:
                     logger.info(f"[Tertiary Dispatch] Browser session note: {b_err}")
         except Exception as e:

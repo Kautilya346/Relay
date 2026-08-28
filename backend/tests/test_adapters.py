@@ -51,12 +51,16 @@ def test_sampark_adapter_handoff():
     assert "sampark.rajasthan.gov.in" in res.handoff_url
 
 
-def test_email_adapter_domain_allowlist():
+def test_email_adapter_domain_allowlist(monkeypatch):
+    from app.core.config import settings
+    monkeypatch.setattr(settings, "TARGET_GRIEVANCE_EMAIL", "")
+    monkeypatch.delenv("TARGET_GRIEVANCE_EMAIL", raising=False)
     adapter = VerifiedInstitutionalEmailAdapter()
     
     # Non-gov domain should be rejected
     invalid_payload = {"incidentId": "INC-1001", "description": "test", "recipient_email": "officer@randomgmail.com"}
     res = adapter.submit(invalid_payload)
+
     assert res.success is False
     assert "allowlist" in res.message
 

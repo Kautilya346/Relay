@@ -186,8 +186,10 @@ export function App() {
               setIsDetailModalOpen(true);
             }}
             onOpenReportModal={() => setIsReportModalOpen(true)}
+            onOpenBrowserModal={(incId) => setBrowserModalIncidentId(incId)}
           />
         )}
+
 
         {activeTab === 'authority' && (
           <AuthorityDashboard
@@ -232,7 +234,11 @@ export function App() {
         incident={selectedIncident}
         isOpen={isDetailModalOpen}
         onClose={() => setIsDetailModalOpen(false)}
+        onOpenEvidenceModal={(incId) => setEvidenceModalIncidentId(incId)}
+        onOpenFollowupModal={handleOpenFollowupApproval}
+        onOpenBrowserModal={(incId) => setBrowserModalIncidentId(incId)}
       />
+
 
       <AuthorityActionModal
         incident={actionIncident}

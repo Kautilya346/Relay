@@ -1,7 +1,9 @@
+import os
 from typing import Dict, Any, Optional
 from datetime import datetime, timezone
 import hashlib
 from app.adapters.base import AuthorityAdapter, AdapterResult
+
 
 
 class VerifiedInstitutionalEmailAdapter(AuthorityAdapter):
@@ -26,24 +28,32 @@ class VerifiedInstitutionalEmailAdapter(AuthorityAdapter):
         if not self.validate(payload):
             return AdapterResult(success=False, message="Invalid payload for Email Gateway.")
 
-        rec_email = payload.get("recipient_email", "")
-        # Guardrail: verified municipal, gov, or official institutional domain
-        valid_domains = [".gov.in", ".nic.in", ".org.in", ".org", ".internal", ".gov", ".mil"]
-        if not any(rec_email.lower().endswith(d) for d in valid_domains):
-            return AdapterResult(
-                success=False,
-                message=f"Recipient email '{rec_email}' is not in the verified official domain allowlist.",
-            )
+        from app.core.config import settings
+        raw_override = (settings.TARGET_GRIEVANCE_EMAIL or os.getenv("TARGET_GRIEVANCE_EMAIL") or "").strip()
+        target_override = raw_override if ("@" in raw_override and "." in raw_override) else ""
+        rec_email = target_override if target_override else payload.get("recipient_email", "")
+
+
+
+        # Guardrail: verified municipal, gov, or official institutional domain (bypassed if target override is configured)
+        if not target_override:
+            valid_domains = [".gov.in", ".nic.in", ".org.in", ".org", ".internal", ".gov", ".mil"]
+            if not any(rec_email.lower().endswith(d) for d in valid_domains):
+                return AdapterResult(
+                    success=False,
+                    message=f"Recipient email '{rec_email}' is not in the verified official domain allowlist.",
+                )
+
 
 
         msg_id = f"MSG-EML-{hashlib.sha256(str(payload).encode()).hexdigest()[:8].upper()}"
         
         # Check if real SMTP credentials exist
-        import os
         smtp_host = os.getenv("SMTP_HOST")
         smtp_user = os.getenv("SMTP_USER")
         smtp_pass = os.getenv("SMTP_PASS")
         smtp_port = int(os.getenv("SMTP_PORT", "587"))
+
 
         email_sent_live = False
         if smtp_host and smtp_user and smtp_pass:
