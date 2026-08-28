@@ -61,7 +61,9 @@ class Settings:
     SMTP_USER: str = os.getenv("SMTP_USER", "")
     SMTP_PASS: str = os.getenv("SMTP_PASS", "")
     OFFICIAL_DISPATCH_SENDER_EMAIL: str = os.getenv("OFFICIAL_DISPATCH_SENDER_EMAIL", "")
+    TARGET_GRIEVANCE_EMAIL: str = os.getenv("TARGET_GRIEVANCE_EMAIL", "")
     SWACHHATA_API_URL: str = os.getenv("SWACHHATA_API_URL", "")
+
 
     SWACHHATA_API_KEY: str = os.getenv("SWACHHATA_API_KEY", "")
     AUTHORITY_HTTP_TIMEOUT_SECONDS: float = float(os.getenv("AUTHORITY_HTTP_TIMEOUT_SECONDS", "20"))

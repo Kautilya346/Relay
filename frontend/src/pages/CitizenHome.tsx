@@ -7,6 +7,7 @@ interface CitizenHomeProps {
   incidents: Incident[];
   onSelectIncident: (inc: Incident) => void;
   onOpenReportModal: () => void;
+  onOpenBrowserModal?: (incId: string) => void;
 }
 
 const CATEGORIES = ['ALL', 'Road & Potholes', 'Sanitation & Garbage', 'Water & Sewage', 'Street Lighting'];
@@ -15,6 +16,7 @@ export const CitizenHome: React.FC<CitizenHomeProps> = ({
   incidents,
   onSelectIncident,
   onOpenReportModal,
+  onOpenBrowserModal,
 }) => {
   const [selectedCategory, setSelectedCategory] = useState<string>('ALL');
 
@@ -197,6 +199,7 @@ export const CitizenHome: React.FC<CitizenHomeProps> = ({
                 key={inc.id}
                 incident={inc}
                 onSelect={onSelectIncident}
+                onOpenBrowser={(i) => onOpenBrowserModal && onOpenBrowserModal(i.id)}
                 showActionBtn={false}
               />
             ))}

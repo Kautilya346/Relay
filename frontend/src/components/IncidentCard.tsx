@@ -7,6 +7,7 @@ interface IncidentCardProps {
   incident: Incident;
   onSelect: (incident: Incident) => void;
   onAction?: (incident: Incident) => void;
+  onOpenBrowser?: (incident: Incident) => void;
   showActionBtn?: boolean;
 }
 
@@ -21,6 +22,7 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
   onSelect,
   onAction,
+  onOpenBrowser,
   showActionBtn = true,
 }) => {
   const getBadgeClass = () => {
@@ -153,11 +155,8 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
           <span>{timeAgo(incident.lastReportedAt)}</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
-          <button
-            onClick={(e) => { e.stopPropagation(); onSelect(incident); }}
-            className="btn btn-sm"
-          >
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button onClick={() => onSelect(incident)} className="glass-button" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}>
             View Details
           </button>
           {showActionBtn && onAction && (
@@ -173,3 +172,4 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
     </div>
   );
 };
+
