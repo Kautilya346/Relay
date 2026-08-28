@@ -7,9 +7,7 @@ interface ImpactMeterProps {
   size?: number;
 }
 
-export const ImpactMeter: React.FC<ImpactMeterProps> = ({ score, priority, size = 64 }) => {
-  const normalizedScore = Math.min(100, Math.max(0, score));
-
+export const ImpactMeter: React.FC<ImpactMeterProps> = ({ score, priority, size = 48 }) => {
   const getColor = () => {
     switch (priority) {
       case 'CRITICAL': return 'var(--priority-critical)';
@@ -20,19 +18,20 @@ export const ImpactMeter: React.FC<ImpactMeterProps> = ({ score, priority, size 
   };
 
   const strokeColor = getColor();
-  const strokeWidth = 6;
+  const strokeWidth = 3;
   const radius = (size - strokeWidth) / 2;
   const circumference = 2 * Math.PI * radius;
+  const normalizedScore = Math.min(100, Math.max(0, score));
   const strokeDashoffset = circumference - (normalizedScore / 100) * circumference;
 
   return (
-    <div style={{ position: 'relative', width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div style={{ position: 'relative', width: size, height: size, display: 'inline-flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
       <svg width={size} height={size} style={{ transform: 'rotate(-90deg)' }}>
         <circle
           cx={size / 2}
           cy={size / 2}
           r={radius}
-          stroke="rgba(255, 255, 255, 0.1)"
+          stroke="var(--border)"
           strokeWidth={strokeWidth}
           fill="transparent"
         />
@@ -45,12 +44,18 @@ export const ImpactMeter: React.FC<ImpactMeterProps> = ({ score, priority, size 
           fill="transparent"
           strokeDasharray={circumference}
           strokeDashoffset={strokeDashoffset}
-          strokeLinecap="round"
+          strokeLinecap="butt"
           style={{ transition: 'stroke-dashoffset 0.6s ease' }}
         />
       </svg>
       <div style={{ position: 'absolute', textAlign: 'center' }}>
-        <span style={{ fontSize: size * 0.3, fontWeight: 800, color: '#ffffff', fontFamily: 'Outfit' }}>
+        <span style={{
+          fontSize: size * 0.28,
+          fontWeight: 400,
+          color: 'var(--text-primary)',
+          fontFamily: 'DM Sans, sans-serif',
+          letterSpacing: '-0.02em',
+        }}>
           {Math.round(score)}
         </span>
       </div>

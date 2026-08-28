@@ -9,6 +9,8 @@ interface AuthorityDashboardProps {
   onOpenActionModal: (inc: Incident) => void;
 }
 
+const PRIORITY_FILTERS = ['ALL', 'CRITICAL', 'HIGH', 'PRIORITY', 'NORMAL'];
+
 export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
   incidents,
   onSelectIncident,
@@ -20,46 +22,99 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
     ? incidents
     : incidents.filter((i) => i.priority === filterLevel);
 
-  // Sort queue by impact score descending
   const sorted = [...filtered].sort((a, b) => b.impactScore - a.impactScore);
+  const criticalCount = incidents.filter((i) => i.priority === 'CRITICAL').length;
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+
       {/* Header banner */}
-      <div className="glass-panel" style={{ padding: '1.75rem 2rem', background: 'rgba(6, 182, 212, 0.1)', border: '1px solid rgba(6, 182, 212, 0.3)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: '1fr auto',
+        gap: 0,
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--surface)',
+        padding: '2.5rem 0',
+        paddingBottom: '2rem',
+      }}>
         <div>
-          <span className="badge badge-priority" style={{ marginBottom: '0.5rem' }}>
-            <ShieldAlert size={12} /> Municipal Officer Workspace
-          </span>
-          <h1 style={{ fontSize: '1.8rem', fontWeight: 800 }}>Authority Action Queue & SLA Taskmaster</h1>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.88rem' }}>
-            Community incidents auto-escalate when report thresholds or SLA deadlines breach.
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.5rem',
+            fontSize: 'var(--text-xs)',
+            fontWeight: 500,
+            textTransform: 'uppercase',
+            letterSpacing: '0.08em',
+            color: 'var(--text-secondary)',
+            marginBottom: '0.75rem',
+          }}>
+            <ShieldAlert size={12} />
+            Municipal Officer Workspace
+          </div>
+          <h1 style={{
+            fontSize: 'clamp(1.5rem, 2.5vw, 2.2rem)',
+            fontWeight: 300,
+            letterSpacing: '-0.04em',
+            marginBottom: '0.5rem',
+          }}>
+            Authority Action Queue
+          </h1>
+          <p style={{ fontSize: 'var(--text-sm)', fontWeight: 300, color: 'var(--text-secondary)' }}>
+            Incidents auto-escalate when report thresholds or SLA deadlines breach.
           </p>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.75rem' }}>
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: '1.5rem', fontWeight: 800, color: 'var(--priority-critical)' }}>
-              {incidents.filter((i) => i.priority === 'CRITICAL').length}
+        {criticalCount > 0 && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem',
+            padding: '1rem 1.5rem',
+            border: '1px solid var(--priority-critical-border)',
+            background: 'var(--priority-critical-bg)',
+            alignSelf: 'flex-start',
+          }}>
+            <div style={{ fontSize: '2rem', fontWeight: 300, letterSpacing: '-0.04em', color: 'var(--priority-critical)', lineHeight: 1 }}>
+              {criticalCount}
             </div>
-            <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>Critical Escalations</div>
+            <div style={{ fontSize: 'var(--text-xs)', color: 'var(--priority-critical)', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+              Critical<br />Escalations
+            </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Filter Bar */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>
-          Queue Items ({sorted.length})
+      {/* Filter bar */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.75rem 0',
+        borderBottom: '1px solid var(--border)',
+      }}>
+        <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: 400 }}>
+          {sorted.length} item{sorted.length !== 1 ? 's' : ''} in queue
         </div>
 
-        <div style={{ display: 'flex', gap: '0.4rem' }}>
-          {['ALL', 'CRITICAL', 'HIGH', 'PRIORITY', 'NORMAL'].map((p) => (
+        <div style={{ display: 'flex', gap: 0 }}>
+          {PRIORITY_FILTERS.map((p) => (
             <button
               key={p}
               onClick={() => setFilterLevel(p)}
-              className={`glass-button ${filterLevel === p ? 'btn-primary' : ''}`}
-              style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}
+              style={{
+                padding: '0.35rem 0.8rem',
+                fontSize: 'var(--text-xs)',
+                fontWeight: filterLevel === p ? 500 : 300,
+                background: filterLevel === p ? 'var(--accent)' : 'transparent',
+                color: filterLevel === p ? '#fff' : 'var(--text-secondary)',
+                border: '1px solid var(--border)',
+                borderLeft: p === 'ALL' ? '1px solid var(--border)' : 'none',
+                cursor: 'pointer',
+                letterSpacing: '-0.01em',
+                transition: 'background 0.1s, color 0.1s',
+              }}
             >
               {p}
             </button>
@@ -67,24 +122,38 @@ export const AuthorityDashboard: React.FC<AuthorityDashboardProps> = ({
         </div>
       </div>
 
-      {/* Queue Grid */}
-      {sorted.length === 0 ? (
-        <div className="glass-panel" style={{ textAlign: 'center', padding: '3rem 1rem', color: 'var(--text-dim)' }}>
-          No incidents currently pending in this queue filter.
-        </div>
-      ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '1.25rem' }}>
-          {sorted.map((inc) => (
-            <IncidentCard
-              key={inc.id}
-              incident={inc}
-              onSelect={onSelectIncident}
-              onAction={onOpenActionModal}
-              showActionBtn={true}
-            />
-          ))}
-        </div>
-      )}
+      {/* Queue grid */}
+      <div style={{ paddingTop: '1.5rem' }}>
+        {sorted.length === 0 ? (
+          <div style={{
+            border: '1px solid var(--border)',
+            padding: '4rem 2rem',
+            textAlign: 'center',
+            color: 'var(--text-tertiary)',
+            fontSize: 'var(--text-sm)',
+          }}>
+            No incidents in this queue filter.
+          </div>
+        ) : (
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: '1px',
+            background: 'var(--border)',
+            border: '1px solid var(--border)',
+          }}>
+            {sorted.map((inc) => (
+              <IncidentCard
+                key={inc.id}
+                incident={inc}
+                onSelect={onSelectIncident}
+                onAction={onOpenActionModal}
+                showActionBtn={true}
+              />
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 };

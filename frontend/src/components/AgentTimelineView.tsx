@@ -7,83 +7,157 @@ interface AgentTimelineViewProps {
   incidentId?: string;
 }
 
+const EVENT_COLORS: Record<string, string> = {
+  ComplaintClassified: 'var(--priority-priority)',
+  ComplaintMatchedToIncident: 'var(--priority-normal)',
+  NewIncidentCreated: 'var(--priority-priority)',
+  ImpactScoreChanged: 'var(--priority-high)',
+  EscalationTriggered: 'var(--priority-critical)',
+  SLABreached: 'var(--priority-critical)',
+};
+
 export const AgentTimelineView: React.FC<AgentTimelineViewProps> = ({ events, incidentId }) => {
   const getEventIcon = (type: string) => {
     switch (type) {
-      case 'ComplaintClassified': return <Cpu size={16} color="#a855f7" />;
-      case 'ComplaintMatchedToIncident': return <CheckCircle2 size={16} color="#06b6d4" />;
-      case 'NewIncidentCreated': return <ShieldAlert size={16} color="#3b82f6" />;
-      case 'ImpactScoreChanged': return <TrendingUp size={16} color="#f59e0b" />;
+      case 'ComplaintClassified': return <Cpu size={13} />;
+      case 'ComplaintMatchedToIncident': return <CheckCircle2 size={13} />;
+      case 'NewIncidentCreated': return <ShieldAlert size={13} />;
+      case 'ImpactScoreChanged': return <TrendingUp size={13} />;
       case 'EscalationTriggered':
-      case 'SLABreached': return <AlertOctagon size={16} color="#f43f5e" />;
-      default: return <User size={16} color="#10b981" />;
+      case 'SLABreached': return <AlertOctagon size={13} />;
+      default: return <User size={13} />;
     }
   };
 
   return (
-    <div className="glass-panel" style={{ padding: '1.5rem' }}>
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
-        <div>
-          <h2 style={{ fontSize: '1.2rem', fontWeight: 800 }}>
-            Autonomous Agent Decision & Event Timeline
+    <div style={{ border: '1px solid var(--border)', background: 'var(--surface)' }}>
+      {/* Header */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        padding: '0.75rem 1.25rem',
+        borderBottom: '1px solid var(--border)',
+        background: 'var(--bg-subtle)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <h2 style={{ fontSize: 'var(--text-sm)', fontWeight: 400, letterSpacing: '-0.02em' }}>
+            Agent Decision Timeline
           </h2>
           {incidentId && (
-            <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)' }}>
-              Audit Stream for {incidentId}
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+              — {incidentId}
             </span>
           )}
         </div>
         <span className="badge badge-normal">
-          <Cpu size={12} /> Explainable AI Log
+          <Cpu size={9} /> Explainable AI
         </span>
       </div>
 
       {events.length === 0 ? (
-        <div style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-dim)', fontSize: '0.85rem' }}>
-          No audit events logged yet. Submit a complaint or trigger an authority action to observe agent execution.
+        <div style={{
+          textAlign: 'center',
+          padding: '3rem 2rem',
+          color: 'var(--text-tertiary)',
+          fontSize: 'var(--text-sm)',
+          fontWeight: 300,
+        }}>
+          No audit events logged yet.
+          <br />
+          <span style={{ fontSize: 'var(--text-xs)' }}>Submit a complaint or trigger an authority action to observe agent execution.</span>
         </div>
       ) : (
-        <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
-          {/* Vertical Timeline Line */}
-          <div style={{ position: 'absolute', top: '15px', bottom: '15px', left: '19px', width: '2px', background: 'var(--border-glass)' }} />
+        <div style={{ padding: '1rem 1.25rem', display: 'flex', flexDirection: 'column', gap: '0', position: 'relative' }}>
+          {/* Timeline line */}
+          <div style={{
+            position: 'absolute',
+            top: '1.5rem',
+            bottom: '1.5rem',
+            left: 'calc(1.25rem + 12px)',
+            width: '1px',
+            background: 'var(--border)',
+          }} />
 
-          {events.map((evt, idx) => (
-            <div key={evt.id || idx} style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', position: 'relative', zIndex: 1 }}>
-              <div style={{ width: '40px', height: '40px', borderRadius: '50%', background: 'rgba(18, 24, 38, 0.95)', border: '1px solid var(--border-glass-bright)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                {getEventIcon(evt.eventType)}
-              </div>
-
-              <div style={{ flex: 1, background: 'rgba(0,0,0,0.25)', border: '1px solid var(--border-glass)', borderRadius: 'var(--radius-sm)', padding: '0.8rem 1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.3rem' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                    <span style={{ fontWeight: 700, fontSize: '0.9rem', color: '#fff' }}>
-                      {evt.eventType}
-                    </span>
-                    <span style={{ fontSize: '0.72rem', background: 'rgba(255,255,255,0.06)', padding: '0.1rem 0.4rem', borderRadius: '4px', color: 'var(--primary-accent)' }}>
-                      {evt.actorType}: {evt.actorId}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: '0.72rem', color: 'var(--text-dim)' }}>
-                    {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : ''}
-                  </span>
+          {events.map((evt, idx) => {
+            const color = EVENT_COLORS[evt.eventType] || 'var(--text-secondary)';
+            return (
+              <div key={evt.id || idx} style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '0.75rem',
+                position: 'relative',
+                zIndex: 1,
+                paddingBottom: idx < events.length - 1 ? '0.75rem' : 0,
+              }}>
+                {/* Icon dot */}
+                <div style={{
+                  width: '26px',
+                  height: '26px',
+                  background: 'var(--white)',
+                  border: `1px solid ${color}`,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  flexShrink: 0,
+                  color,
+                  marginTop: '2px',
+                }}>
+                  {getEventIcon(evt.eventType)}
                 </div>
 
-                <p style={{ fontSize: '0.83rem', color: 'var(--text-muted)' }}>
-                  {evt.decision}
-                </p>
-
-                {evt.reasonCodes && evt.reasonCodes.length > 0 && (
-                  <div style={{ display: 'flex', gap: '0.3rem', flexWrap: 'wrap', marginTop: '0.4rem' }}>
-                    {evt.reasonCodes.map((code, cIdx) => (
-                      <span key={cIdx} style={{ fontSize: '0.68rem', color: 'var(--priority-normal)', background: 'rgba(16,185,129,0.1)', padding: '0.1rem 0.35rem', borderRadius: '3px', border: '1px solid rgba(16,185,129,0.2)' }}>
-                        #{code}
+                {/* Content */}
+                <div style={{
+                  flex: 1,
+                  border: '1px solid var(--border)',
+                  padding: '0.65rem 0.9rem',
+                  background: 'var(--white)',
+                }}>
+                  <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '0.25rem' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <span style={{ fontSize: 'var(--text-xs)', fontWeight: 500, color: 'var(--text-primary)' }}>
+                        {evt.eventType}
                       </span>
-                    ))}
+                      <span style={{
+                        fontSize: '0.65rem',
+                        background: 'var(--bg-subtle)',
+                        border: '1px solid var(--border)',
+                        padding: '0.1rem 0.35rem',
+                        color: 'var(--text-secondary)',
+                        fontWeight: 400,
+                      }}>
+                        {evt.actorType}: {evt.actorId}
+                      </span>
+                    </div>
+                    <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)' }}>
+                      {evt.timestamp ? new Date(evt.timestamp).toLocaleTimeString() : ''}
+                    </span>
                   </div>
-                )}
+
+                  <p style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', fontWeight: 300, lineHeight: 1.5 }}>
+                    {evt.decision}
+                  </p>
+
+                  {evt.reasonCodes && evt.reasonCodes.length > 0 && (
+                    <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', marginTop: '0.35rem' }}>
+                      {evt.reasonCodes.map((code, cIdx) => (
+                        <span key={cIdx} style={{
+                          fontSize: '0.62rem',
+                          color: 'var(--priority-normal)',
+                          background: 'var(--priority-normal-bg)',
+                          border: '1px solid var(--priority-normal-border)',
+                          padding: '0.1rem 0.3rem',
+                          fontWeight: 400,
+                        }}>
+                          #{code}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>

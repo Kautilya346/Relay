@@ -34,135 +34,161 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
 
   if (!isOpen || !incident) return null;
 
+  const getBadgeClass = () => {
+    switch (incident.priority) {
+      case 'CRITICAL': return 'badge-critical';
+      case 'HIGH': return 'badge-high';
+      case 'PRIORITY': return 'badge-priority';
+      default: return 'badge-normal';
+    }
+  };
+
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: 1000, background: 'rgba(0,0,0,0.8)', backdropFilter: 'blur(10px)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '1rem' }}>
-      <div className="glass-panel" style={{ width: '100%', maxWidth: '850px', maxHeight: '90vh', overflowY: 'auto', padding: '2rem', border: '1px solid var(--border-glass-bright)' }}>
+    <div className="modal-overlay" style={{ alignItems: 'flex-start', paddingTop: '2rem' }}>
+      <div style={{
+        width: '100%',
+        maxWidth: '760px',
+        maxHeight: '88vh',
+        overflowY: 'auto',
+        background: 'var(--white)',
+        border: '1px solid var(--border-strong)',
+        boxShadow: 'var(--shadow-lg)',
+      }}>
         {/* Header */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '1.25rem' }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          padding: '1.25rem 1.5rem',
+          borderBottom: '1px solid var(--border)',
+          position: 'sticky',
+          top: 0,
+          background: 'var(--white)',
+          zIndex: 1,
+        }}>
           <div>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', flexWrap: 'wrap' }}>
-              <span className="badge badge-critical">{incident.priority}</span>
-              <span style={{ fontSize: '0.8rem', color: 'var(--text-dim)', fontWeight: 700 }}>{incident.id}</span>
+              <span className={`badge ${getBadgeClass()}`}>{incident.priority}</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>{incident.id}</span>
               {externalCase && (
-                <span className="badge" style={{ background: 'rgba(16, 185, 129, 0.2)', border: '1px solid rgba(16, 185, 129, 0.4)', color: '#34d399', fontSize: '0.75rem', fontWeight: 700 }}>
-                  Official Case: {externalCase.externalComplaintId}
+                <span className="badge badge-normal">
+                  Case: {externalCase.externalComplaintId}
                 </span>
               )}
-              <span style={{ fontSize: '0.8rem', background: 'rgba(255,255,255,0.06)', padding: '0.15rem 0.5rem', borderRadius: '4px' }}>{incident.category}</span>
+              <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-secondary)', background: 'var(--bg-subtle)', border: '1px solid var(--border)', padding: '0.1rem 0.4rem' }}>
+                {incident.category}
+              </span>
             </div>
-            <h2 style={{ fontSize: '1.5rem', fontWeight: 800 }}>{incident.title}</h2>
+            <h2 style={{ fontSize: 'var(--text-xl)', fontWeight: 300, letterSpacing: '-0.04em' }}>{incident.title}</h2>
           </div>
-          <button onClick={onClose} className="glass-button" style={{ padding: '0.4rem', borderRadius: '50%' }}>
-            <X size={20} />
+          <button onClick={onClose} className="btn btn-ghost" style={{ padding: '0.3rem', marginLeft: '1rem' }}>
+            <X size={16} />
           </button>
         </div>
 
-        {/* Action Controls Bar */}
-        <div style={{ display: 'flex', gap: '0.6rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
-          {onOpenEvidenceModal && (
-            <button
-              onClick={() => onOpenEvidenceModal(incident.id)}
-              className="glass-button"
-              style={{ fontSize: '0.8rem', padding: '0.5rem 0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderColor: 'rgba(99, 102, 241, 0.4)' }}
-            >
-              <FileText size={14} color="#818cf8" />
-              <span>Evidence Complaint Composer</span>
-            </button>
+        <div style={{ padding: '1.5rem', display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+          {/* Action Controls */}
+          {(onOpenEvidenceModal || onOpenFollowupModal || onOpenBrowserModal) && (
+            <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+              {onOpenEvidenceModal && (
+                <button onClick={() => onOpenEvidenceModal(incident.id)} className="btn btn-sm">
+                  <FileText size={12} /> Evidence Composer
+                </button>
+              )}
+              {onOpenFollowupModal && (
+                <button onClick={() => onOpenFollowupModal(incident.id)} className="btn btn-sm">
+                  <Send size={12} /> Follow-Up Approval
+                </button>
+              )}
+              {onOpenBrowserModal && (
+                <button onClick={() => onOpenBrowserModal(incident.id)} className="btn btn-sm">
+                  <Globe size={12} /> Browser Worker
+                </button>
+              )}
+            </div>
           )}
 
-          {onOpenFollowupModal && (
-            <button
-              onClick={() => onOpenFollowupModal(incident.id)}
-              className="glass-button"
-              style={{ fontSize: '0.8rem', padding: '0.5rem 0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderColor: 'rgba(245, 158, 11, 0.4)' }}
-            >
-              <Send size={14} color="#fbbf24" />
-              <span>Human Follow-Up Approval</span>
-            </button>
-          )}
-
-          {onOpenBrowserModal && (
-            <button
-              onClick={() => onOpenBrowserModal(incident.id)}
-              className="glass-button"
-              style={{ fontSize: '0.8rem', padding: '0.5rem 0.9rem', display: 'flex', alignItems: 'center', gap: '0.4rem', borderColor: 'rgba(20, 184, 166, 0.4)' }}
-            >
-              <Globe size={14} color="#2dd4bf" />
-              <span>Shared Browser Worker</span>
-            </button>
-          )}
-        </div>
-
-        {/* Impact Bar */}
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', background: 'rgba(0,0,0,0.3)', padding: '1rem 1.25rem', borderRadius: 'var(--radius-sm)', marginBottom: '1.5rem', border: '1px solid var(--border-glass)' }}>
-          <div>
-            <div style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 700 }}>DETERMINISTIC COMMUNITY IMPACT</div>
-            <div style={{ fontSize: '1.4rem', fontWeight: 800, color: 'var(--primary-accent)' }}>
-              {incident.impactScore} / 100.0
-            </div>
-          </div>
-
-          <div style={{ display: 'flex', gap: '1.5rem' }}>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Unique Citizens</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{incident.uniqueCitizenCount}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Raw Reports</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700 }}>{incident.reportCount}</div>
-            </div>
-            <div>
-              <div style={{ fontSize: '0.7rem', color: 'var(--text-dim)' }}>Authority Level</div>
-              <div style={{ fontSize: '1.1rem', fontWeight: 700, color: '#f59e0b' }}>L{incident.escalationLevel}</div>
-            </div>
-          </div>
-        </div>
-
-        {/* Description / Summary */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.4rem' }}>Incident Summary</h3>
-          <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', lineHeight: 1.5 }}>
-            {incident.summary}
-          </p>
-        </div>
-
-        {/* Resolution Evidence if resolved */}
-        {incident.resolutionEvidenceUrls.length > 0 && (
-          <div style={{ marginBottom: '1.5rem', background: 'rgba(16, 185, 129, 0.1)', padding: '1rem', borderRadius: 'var(--radius-sm)', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
-            <h3 style={{ fontSize: '0.95rem', fontWeight: 700, color: 'var(--priority-normal)', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-              <Camera size={16} /> Verified Resolution Evidence Photo
-            </h3>
-            <div style={{ display: 'flex', gap: '0.75rem' }}>
-              {incident.resolutionEvidenceUrls.map((url, i) => (
-                <img key={i} src={url} alt="Resolution repair evidence" style={{ width: '120px', height: '90px', objectFit: 'cover', borderRadius: '8px', border: '1px solid var(--border-glass-bright)' }} />
-              ))}
-            </div>
-          </div>
-        )}
-
-        {/* Corroborating Citizen Reports */}
-        <div style={{ marginBottom: '1.5rem' }}>
-          <h3 style={{ fontSize: '1rem', fontWeight: 700, marginBottom: '0.75rem' }}>
-            Aggregated Citizen Reports ({complaints.length})
-          </h3>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-            {complaints.map((cmp) => (
-              <div key={cmp.id} style={{ background: 'rgba(0,0,0,0.2)', padding: '0.75rem 1rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div>
-                  <div style={{ fontSize: '0.85rem', color: '#fff', fontWeight: 500 }}>{cmp.description}</div>
-                  <div style={{ fontSize: '0.72rem', color: 'var(--text-dim)', marginTop: '0.2rem' }}>
-                    Reporter: {cmp.userId} | Credibility: {cmp.credibilityScore * 100}% | Severity: {cmp.severity}/5
-                  </div>
+          {/* Impact bar */}
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(4, 1fr)',
+            gap: '0',
+            border: '1px solid var(--border)',
+          }}>
+            {[
+              { label: 'Impact Score', value: `${incident.impactScore} / 100` },
+              { label: 'Citizens', value: incident.uniqueCitizenCount },
+              { label: 'Reports', value: incident.reportCount },
+              { label: 'Escalation', value: `L${incident.escalationLevel}` },
+            ].map((item, i) => (
+              <div key={item.label} style={{ padding: '0.75rem 1rem', borderRight: i < 3 ? '1px solid var(--border)' : 'none' }}>
+                <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 400, textTransform: 'uppercase', letterSpacing: '0.04em', marginBottom: '0.2rem' }}>
+                  {item.label}
                 </div>
-                {cmp.imageUrls && cmp.imageUrls[0] && (
-                  <img src={cmp.imageUrls[0]} alt="evidence" style={{ width: '40px', height: '40px', objectFit: 'cover', borderRadius: '4px' }} />
-                )}
+                <div style={{ fontSize: 'var(--text-lg)', fontWeight: 300, letterSpacing: '-0.03em' }}>{item.value}</div>
               </div>
             ))}
+          </div>
+
+          {/* Summary */}
+          <div>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-tertiary)', marginBottom: '0.5rem' }}>
+              Incident Summary
+            </div>
+            <p style={{ fontSize: 'var(--text-base)', fontWeight: 300, color: 'var(--text-secondary)', lineHeight: 1.7 }}>
+              {incident.summary}
+            </p>
+          </div>
+
+          {/* Resolution evidence */}
+          {incident.resolutionEvidenceUrls.length > 0 && (
+            <div style={{ padding: '1rem', border: '1px solid var(--priority-normal-border)', background: 'var(--priority-normal-bg)' }}>
+              <div style={{ fontSize: 'var(--text-xs)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--priority-normal)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                <Camera size={11} /> Resolution Evidence
+              </div>
+              <div style={{ display: 'flex', gap: '0.5rem' }}>
+                {incident.resolutionEvidenceUrls.map((url, i) => (
+                  <img key={i} src={url} alt="Resolution evidence" style={{ width: '100px', height: '70px', objectFit: 'cover', border: '1px solid var(--priority-normal-border)' }} />
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Citizen reports */}
+          <div>
+            <div style={{ fontSize: 'var(--text-xs)', fontWeight: 500, textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--text-tertiary)', marginBottom: '0.75rem' }}>
+              Aggregated Citizen Reports ({complaints.length})
+            </div>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0', border: '1px solid var(--border)' }}>
+              {complaints.length === 0 && (
+                <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--text-tertiary)', fontSize: 'var(--text-sm)', fontWeight: 300 }}>
+                  No individual reports loaded.
+                </div>
+              )}
+              {complaints.map((cmp, i) => (
+                <div key={cmp.id} style={{
+                  padding: '0.75rem 1rem',
+                  borderTop: i > 0 ? '1px solid var(--border)' : 'none',
+                  display: 'flex',
+                  justifyContent: 'space-between',
+                  alignItems: 'center',
+                  gap: '1rem',
+                }}>
+                  <div>
+                    <div style={{ fontSize: 'var(--text-sm)', fontWeight: 300, color: 'var(--text-primary)', marginBottom: '0.2rem' }}>{cmp.description}</div>
+                    <div style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)' }}>
+                      {cmp.userId} · Credibility {(cmp.credibilityScore * 100).toFixed(0)}% · Severity {cmp.severity}/5
+                    </div>
+                  </div>
+                  {cmp.imageUrls && cmp.imageUrls[0] && (
+                    <img src={cmp.imageUrls[0]} alt="Evidence" style={{ width: '44px', height: '36px', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
+                  )}
+                </div>
+              ))}
+            </div>
           </div>
         </div>
       </div>
     </div>
   );
 };
-

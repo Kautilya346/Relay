@@ -10,6 +10,13 @@ interface IncidentCardProps {
   showActionBtn?: boolean;
 }
 
+const PRIORITY_LABELS: Record<string, string> = {
+  CRITICAL: 'Critical',
+  HIGH: 'High',
+  PRIORITY: 'Priority',
+  NORMAL: 'Normal',
+};
+
 export const IncidentCard: React.FC<IncidentCardProps> = ({
   incident,
   onSelect,
@@ -25,74 +32,140 @@ export const IncidentCard: React.FC<IncidentCardProps> = ({
     }
   };
 
+  const timeAgo = (iso: string) => {
+    const diffMs = Date.now() - new Date(iso).getTime();
+    const h = Math.floor(diffMs / 3600000);
+    if (h < 1) return 'Just now';
+    if (h < 24) return `${h}h ago`;
+    return `${Math.floor(h / 24)}d ago`;
+  };
+
   return (
-    <div className="glass-panel" style={{ padding: '1.25rem', display: 'flex', flexDirection: 'column', gap: '1rem', position: 'relative' }}>
-      {/* Header */}
-      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '1rem' }}>
-        <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.35rem' }}>
+    <div
+      style={{
+        background: 'var(--surface)',
+        padding: '1.5rem',
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '1rem',
+        cursor: 'pointer',
+        transition: 'background 0.1s',
+      }}
+      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg-subtle)')}
+      onMouseLeave={e => (e.currentTarget.style.background = 'var(--surface)')}
+    >
+      {/* Top row: badge + id + impact */}
+      <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: '0.75rem' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
             <span className={`badge ${getBadgeClass()}`}>
-              <AlertTriangle size={12} /> {incident.priority}
+              <AlertTriangle size={9} />
+              {PRIORITY_LABELS[incident.priority] ?? incident.priority}
             </span>
-            <span style={{ fontSize: '0.75rem', color: 'var(--text-dim)', fontWeight: 600 }}>
+            <span style={{ fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 400 }}>
               {incident.id}
             </span>
-            <span style={{ fontSize: '0.75rem', background: 'rgba(255,255,255,0.06)', padding: '0.15rem 0.5rem', borderRadius: '4px', color: 'var(--text-muted)' }}>
-              {incident.category}
-            </span>
           </div>
-          <h3 style={{ fontSize: '1.1rem', fontWeight: 700, color: 'var(--text-main)', lineHeight: 1.3 }}>
-            {incident.title || `${incident.category} Incident`}
-          </h3>
+          <span style={{
+            fontSize: 'var(--text-xs)',
+            color: 'var(--text-secondary)',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border)',
+            padding: '0.15rem 0.4rem',
+            alignSelf: 'flex-start',
+          }}>
+            {incident.category}
+          </span>
         </div>
-        <ImpactMeter score={incident.impactScore} priority={incident.priority} size={54} />
+
+        <ImpactMeter score={incident.impactScore} priority={incident.priority} size={48} />
       </div>
 
-      <p style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
+      {/* Title */}
+      <h3 style={{
+        fontSize: 'var(--text-md)',
+        fontWeight: 400,
+        color: 'var(--text-primary)',
+        lineHeight: 1.3,
+        letterSpacing: '-0.02em',
+      }}>
+        {incident.title || `${incident.category} Incident`}
+      </h3>
+
+      {/* Summary */}
+      <p style={{
+        fontSize: 'var(--text-sm)',
+        fontWeight: 300,
+        color: 'var(--text-secondary)',
+        lineHeight: 1.6,
+        display: '-webkit-box',
+        WebkitLineClamp: 2,
+        WebkitBoxOrient: 'vertical',
+        overflow: 'hidden',
+      }}>
         {incident.summary}
       </p>
 
-      {/* Metrics Row */}
-      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '0.5rem', background: 'rgba(0,0,0,0.2)', padding: '0.6rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-glass)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <Users size={14} color="var(--primary-accent)" />
-          <div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Unique Citizens</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{incident.uniqueCitizenCount}</div>
+      {/* Metrics */}
+      <div style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(3, 1fr)',
+        gap: '0',
+        border: '1px solid var(--border)',
+      }}>
+        <div style={{ padding: '0.6rem 0.75rem', borderRight: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+            <Users size={11} color="var(--text-tertiary)" />
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Citizens</span>
           </div>
+          <div style={{ fontSize: 'var(--text-base)', fontWeight: 400 }}>{incident.uniqueCitizenCount}</div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <FileText size={14} color="#06b6d4" />
-          <div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Raw Reports</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>{incident.reportCount}</div>
+        <div style={{ padding: '0.6rem 0.75rem', borderRight: '1px solid var(--border)' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+            <FileText size={11} color="var(--text-tertiary)" />
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Reports</span>
           </div>
+          <div style={{ fontSize: 'var(--text-base)', fontWeight: 400 }}>{incident.reportCount}</div>
         </div>
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-          <ShieldAlert size={14} color="#f59e0b" />
-          <div>
-            <div style={{ fontSize: '0.68rem', color: 'var(--text-dim)' }}>Escalation Level</div>
-            <div style={{ fontSize: '0.85rem', fontWeight: 700 }}>L{incident.escalationLevel}</div>
+        <div style={{ padding: '0.6rem 0.75rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', marginBottom: '0.2rem' }}>
+            <ShieldAlert size={11} color="var(--text-tertiary)" />
+            <span style={{ fontSize: '0.65rem', color: 'var(--text-tertiary)', textTransform: 'uppercase', letterSpacing: '0.04em' }}>Escalation</span>
           </div>
+          <div style={{ fontSize: 'var(--text-base)', fontWeight: 400 }}>L{incident.escalationLevel}</div>
         </div>
       </div>
 
-      {/* Footer Info */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', paddingTop: '0.5rem', borderTop: '1px solid var(--border-glass)', fontSize: '0.78rem', color: 'var(--text-dim)' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-          <MapPin size={12} />
+      {/* Footer */}
+      <div style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'space-between',
+        paddingTop: '0.75rem',
+        borderTop: '1px solid var(--border)',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', fontSize: 'var(--text-xs)', color: 'var(--text-tertiary)', fontWeight: 300 }}>
+          <MapPin size={11} />
           <span>{incident.authorityId.replace(/_/g, ' ')}</span>
+          <span style={{ margin: '0 0.2rem' }}>·</span>
+          <span>{timeAgo(incident.lastReportedAt)}</span>
         </div>
 
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <button onClick={() => onSelect(incident)} className="glass-button" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}>
+        <div style={{ display: 'flex', gap: '0.4rem' }}>
+          <button
+            onClick={(e) => { e.stopPropagation(); onSelect(incident); }}
+            className="btn btn-sm"
+          >
             View Details
           </button>
           {showActionBtn && onAction && (
-            <button onClick={() => onAction(incident)} className="glass-button btn-primary" style={{ fontSize: '0.78rem', padding: '0.35rem 0.75rem' }}>
-              Action Queue
+            <button
+              onClick={(e) => { e.stopPropagation(); onAction(incident); }}
+              className="btn btn-dark btn-sm"
+            >
+              Take Action
             </button>
           )}
         </div>

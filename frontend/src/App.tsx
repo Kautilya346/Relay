@@ -169,7 +169,7 @@ export function App() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', background: 'var(--bg)' }}>
       <Navbar
         activeTab={activeTab}
         setActiveTab={setActiveTab}
@@ -177,7 +177,7 @@ export function App() {
         isBackendConnected={isBackendConnected}
       />
 
-      <main style={{ flex: 1, maxWidth: '1400px', width: '100%', margin: '0 auto', padding: '2rem 1.5rem' }}>
+      <main style={{ flex: 1, maxWidth: '1400px', width: '100%', margin: '0 auto', padding: '2rem 2rem' }}>
         {activeTab === 'citizen' && (
           <CitizenHome
             incidents={incidents}
