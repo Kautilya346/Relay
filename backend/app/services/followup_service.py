@@ -116,9 +116,22 @@ def approve_and_send_followup(
     ext_id = external_case.externalComplaintId if external_case else f"EXT-{incident_id}"
     message_to_send = override_text or auth_record.payloadSummary
 
-    # Dispatch to verified adapter
+    # Dispatch to verified adapter (portal-based submission)
     adapter = registry.get_verified_or_fallback(incident.authorityId)
     adapter_result = adapter.send_followup(ext_id, message_to_send)
+
+    # Always also dispatch the follow-up via the live email adapter so it reaches
+    # the configured TARGET_GRIEVANCE_EMAIL regardless of which portal adapter is used.
+    from app.adapters import registry as _reg
+    email_adapter = _reg.get("VERIFIED_EMAIL_FALLBACK")
+    email_result = None
+    if email_adapter and adapter.authority_id != "VERIFIED_EMAIL_FALLBACK":
+        email_result = email_adapter.send_followup(ext_id, message_to_send)
+        # If the primary adapter failed but email succeeded, promote email result
+        if not adapter_result.success and email_result and email_result.success:
+            adapter_result = email_result
+
+
 
     # Update incident and external case
     if external_case:

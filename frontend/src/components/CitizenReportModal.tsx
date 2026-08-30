@@ -1,7 +1,7 @@
-import React, { useState } from "react";
-import { X, MapPin, Send, Zap, Cloud, Upload, Check } from "lucide-react";
-import { submitComplaint, uploadEvidenceFile } from "../services/api";
-import type { Complaint } from "../types";
+import React, { useState } from 'react';
+import { X, MapPin, Send, Upload, Check, Loader2 } from 'lucide-react';
+import { submitComplaint, uploadEvidenceFile } from '../services/api';
+import type { Complaint } from '../types';
 
 interface CitizenReportModalProps {
   isOpen: boolean;
@@ -10,56 +10,41 @@ interface CitizenReportModalProps {
 }
 
 const PRESETS = [
-  {
-    key: "pothole",
-    label: "Pothole",
-    category: "Road & Potholes",
-    lat: 12.9716,
-    lng: 77.5946,
-    desc: "Massive dangerous pothole near MG Road Metro pillar 120 causing severe traffic bottleneck.",
-    img: "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600",
-  },
-  {
-    key: "garbage",
-    label: "Market Garbage",
-    category: "Sanitation & Garbage",
-    lat: 12.9725,
-    lng: 77.5955,
-    desc: "Uncollected garbage heap rotting near Ward 80 market entrance creating severe stench.",
-    img: "https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600",
-  },
-  {
-    key: "light",
-    label: "Dark Streetlights",
-    category: "Street Lighting",
-    lat: 12.973,
-    lng: 77.593,
-    desc: "Dark stretch with 4 broken streetlights near 10th Main corner. Dangerous for pedestrians at night.",
-    img: "https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=600",
-  },
-  {
-    key: "water",
-    label: "Water Pipe Burst",
-    category: "Water & Sewage",
-    lat: 12.971,
-    lng: 77.596,
-    desc: "Major clean water pipeline burst flooding 4th Cross Road. Thousands of liters wasting.",
-    img: "https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=600",
-  },
+  { key: 'pothole',  label: 'Pothole',          category: 'Road & Potholes',      lat: 12.9716, lng: 77.5946, desc: 'Massive dangerous pothole near MG Road Metro pillar 120 causing severe traffic bottleneck.',       img: 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600' },
+  { key: 'garbage',  label: 'Market Garbage',    category: 'Sanitation & Garbage', lat: 12.9725, lng: 77.5955, desc: 'Uncollected garbage heap rotting near Ward 80 market entrance creating severe stench.',             img: 'https://images.unsplash.com/photo-1530587191325-3db32d826c18?w=600' },
+  { key: 'light',    label: 'Broken Streetlights', category: 'Street Lighting',   lat: 12.9730, lng: 77.5930, desc: 'Dark stretch with 4 broken streetlights near 10th Main corner. Dangerous for pedestrians at night.', img: 'https://images.unsplash.com/photo-1517420704952-d9f39e95b43e?w=600' },
+  { key: 'water',    label: 'Water Pipe Burst',  category: 'Water & Sewage',       lat: 12.9710, lng: 77.5960, desc: 'Major clean water pipeline burst flooding 4th Cross Road. Thousands of liters wasting.',             img: 'https://images.unsplash.com/photo-1541888946425-d0fbb186a5b7?w=600' },
 ];
 
-export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
-  isOpen,
-  onClose,
-  onSuccess,
-}) => {
-  const [description, setDescription] = useState("");
-  const [category, setCategory] = useState("Road & Potholes");
-  const [latitude, setLatitude] = useState(12.9716);
-  const [longitude, setLongitude] = useState(77.5946);
-  const [imageUrl, setImageUrl] = useState("");
-  const [userId, setUserId] = useState("citizen_arun");
-  const [loading, setLoading] = useState(false);
+const inputStyle: React.CSSProperties = {
+  width: '100%', boxSizing: 'border-box',
+  background: 'var(--surface)',
+  border: '1px solid var(--border-strong)',
+  padding: '8px 10px',
+  borderRadius: '0',
+  color: 'var(--text-primary)',
+  fontSize: '13px',
+  fontFamily: 'Inter, system-ui, sans-serif',
+  outline: 'none',
+};
+
+const labelStyle: React.CSSProperties = {
+  display: 'block',
+  fontSize: '10px', fontWeight: 700,
+  color: 'var(--text-tertiary)',
+  letterSpacing: '0.08em',
+  textTransform: 'uppercase',
+  marginBottom: '6px',
+};
+
+export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({ isOpen, onClose, onSuccess }) => {
+  const [description, setDescription]   = useState('');
+  const [category, setCategory]         = useState('Road & Potholes');
+  const [latitude, setLatitude]         = useState(12.9716);
+  const [longitude, setLongitude]       = useState(77.5946);
+  const [imageUrl, setImageUrl]         = useState('');
+  const [userId, setUserId]             = useState('citizen_arun');
+  const [loading, setLoading]           = useState(false);
   const [uploadingGcp, setUploadingGcp] = useState(false);
 
   if (!isOpen) return null;
@@ -78,36 +63,20 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
     setUploadingGcp(true);
     try {
       const gcsUrl = await uploadEvidenceFile(file);
-      if (gcsUrl) {
-        setImageUrl(gcsUrl);
-      } else {
-        alert("Could not upload image to Google Cloud Storage.");
-      }
-    } catch {
-      alert("Error uploading file to GCP.");
-    } finally {
-      setUploadingGcp(false);
-    }
+      if (gcsUrl) { setImageUrl(gcsUrl); }
+      else { alert('Could not upload image to storage.'); }
+    } catch { alert('Error uploading file.'); }
+    finally { setUploadingGcp(false); }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!description.trim()) return;
-
     setLoading(true);
     try {
-      const res = await submitComplaint({
-        userId,
-        description,
-        category,
-        latitude,
-        longitude,
-        imageUrls: imageUrl ? [imageUrl] : [],
-      });
+      const res = await submitComplaint({ userId, description, category, latitude, longitude, imageUrls: imageUrl ? [imageUrl] : [] });
       setLoading(false);
-      if (res && res.complaint) {
-        onSuccess(res.complaint);
-      }
+      if (res?.complaint) onSuccess(res.complaint);
       onClose();
     } catch {
       setLoading(false);
@@ -116,175 +85,84 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
   };
 
   return (
-    <div
-      style={{
-        position: "fixed",
-        inset: 0,
-        zIndex: 1000,
-        background: "rgba(15, 23, 42, 0.45)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        padding: "1rem",
-      }}
-    >
-      <div
-        style={{
-          width: "100%",
-          maxWidth: "620px",
-          padding: "1.75rem",
-          background: "#ffffff",
-          color: "#0f172a",
-          border: "1px solid #e2e8f0",
-          borderRadius: "16px",
-          boxShadow: "0 20px 50px rgba(0,0,0,0.12)",
-        }}
-      >
-        <div
-          style={{
-            display: "flex",
-            alignItems: "flex-start",
-            justifyContent: "space-between",
-            marginBottom: "1.25rem",
-            borderBottom: "1px solid #f1f5f9",
-            paddingBottom: "1rem",
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-            <div
-              style={{
-                width: "42px",
-                height: "42px",
-                background: "#111111",
-                border: "1px solid #1f2937",
-                borderRadius: "10px",
-                color: "#ffffff",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                boxShadow: "0 4px 12px rgba(17, 17, 17, 0.12)",
-              }}
-            >
-              <MapPin size={18} />
-            </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 1000,
+      background: 'rgba(0,0,0,0.45)',
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      padding: '16px',
+    }}>
+      <div style={{
+        width: '100%', maxWidth: '580px',
+        background: 'var(--surface)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '0',
+        boxShadow: 'var(--shadow-lg)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+        maxHeight: '92vh', overflowY: 'auto',
+      }}>
 
-            <div>
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "0.5rem",
-                  flexWrap: "wrap",
-                }}
-              >
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    color: "#6b7280",
-                    background: "#f8fafc",
-                    border: "1px solid #e2e8f0",
-                    padding: "0.2rem 0.5rem",
-                    borderRadius: "999px",
-                  }}
-                >
-                  Civic report
-                </span>
-                <span
-                  style={{
-                    fontSize: "0.65rem",
-                    fontWeight: 700,
-                    textTransform: "uppercase",
-                    letterSpacing: "0.08em",
-                    color: "#111827",
-                    background: "#f3f4f6",
-                    border: "1px solid #e5e7eb",
-                    padding: "0.2rem 0.5rem",
-                    borderRadius: "999px",
-                  }}
-                >
-                  GCP verified
-                </span>
-              </div>
-
-              <h2
-                style={{
-                  marginTop: "0.35rem",
-                  fontSize: "1.45rem",
-                  fontWeight: 700,
-                  color: "#111827",
-                  fontFamily: "DM Sans, sans-serif",
-                  letterSpacing: "-0.03em",
-                }}
-              >
-                Report Civic Issue
-              </h2>
-            </div>
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          padding: '20px 24px 16px',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div>
+            <span style={{
+              display: 'inline-block', marginBottom: '6px',
+              fontSize: '10px', fontWeight: 700, textTransform: 'uppercase',
+              letterSpacing: '0.08em', color: 'var(--text-tertiary)',
+              background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+              padding: '2px 8px',
+            }}>
+              Citizen Report
+            </span>
+            <h2 style={{ margin: 0, fontSize: '16px', fontWeight: 700, color: 'var(--text-primary)', letterSpacing: '-0.01em' }}>
+              Report a Civic Issue
+            </h2>
+            <p style={{ margin: '3px 0 0', fontSize: '12px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+              AI will aggregate, cluster, and route your report to responsible authorities.
+            </p>
           </div>
 
           <button
             onClick={onClose}
             style={{
-              background: "#ffffff",
-              border: "1px solid #e2e8f0",
-              color: "#64748b",
-              padding: "0.45rem",
-              borderRadius: "50%",
-              cursor: "pointer",
-              display: "flex",
-              alignItems: "center",
-              justifyContent: "center",
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '28px', height: '28px', flexShrink: 0,
+              background: 'none', border: '1px solid var(--border)',
+              cursor: 'pointer', color: 'var(--text-tertiary)',
+              borderRadius: '0', transition: 'all 0.15s',
             }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)'; }}
           >
-            <X size={18} />
+            <X style={{ width: '13px', height: '13px' }} />
           </button>
         </div>
 
-        <div
-          style={{
-            marginBottom: "1.25rem",
-            background: "#fafafa",
-            padding: "0.75rem 0.9rem",
-            borderRadius: "10px",
-            border: "1px solid #e2e8f0",
-          }}
-        >
-          <div
-            style={{
-              fontSize: "0.72rem",
-              color: "#64748b",
-              fontWeight: 700,
-              letterSpacing: "0.05em",
-              textTransform: "uppercase",
-              marginBottom: "0.5rem",
-              display: "flex",
-              alignItems: "center",
-              gap: "0.35rem",
-            }}
-          >
-            <Zap size={13} color="#111827" /> Sample issues
+        {/* Quick Presets */}
+        <div style={{ padding: '14px 24px', borderBottom: '1px solid var(--border)', background: 'var(--bg-subtle)' }}>
+          <div style={{ fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em', textTransform: 'uppercase', color: 'var(--text-tertiary)', marginBottom: '8px' }}>
+            Sample Issues
           </div>
-
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "0.45rem" }}>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
             {PRESETS.map((p) => (
               <button
                 key={p.key}
                 type="button"
-                style={{
-                  fontSize: "0.76rem",
-                  padding: "0.35rem 0.7rem",
-                  background: "#ffffff",
-                  border: "1px solid #e2e8f0",
-                  color: "#1f2937",
-                  borderRadius: "6px",
-                  fontWeight: 500,
-                  cursor: "pointer",
-                }}
                 onClick={() => handlePreset(p)}
+                style={{
+                  fontSize: '11px', fontWeight: 500,
+                  padding: '4px 10px',
+                  background: 'var(--surface)',
+                  border: '1px solid var(--border-strong)',
+                  color: 'var(--text-secondary)',
+                  borderRadius: '0', cursor: 'pointer',
+                  transition: 'all 0.15s',
+                }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
               >
                 {p.label}
               </button>
@@ -292,111 +170,43 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
           </div>
         </div>
 
-        <form
-          onSubmit={handleSubmit}
-          style={{ display: "flex", flexDirection: "column", gap: "1.1rem" }}
-        >
+        {/* Form */}
+        <form onSubmit={handleSubmit} style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Reporter ID */}
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                color: "#64748b",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                marginBottom: "0.4rem",
-              }}
-            >
-              Reporter citizen ID
-            </label>
+            <label style={labelStyle}>Reporter Citizen ID</label>
             <input
-              type="text"
-              value={userId}
+              type="text" value={userId}
               onChange={(e) => setUserId(e.target.value)}
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                padding: "0.6rem 0.85rem",
-                borderRadius: "8px",
-                color: "#0f172a",
-                fontSize: "0.88rem",
-                fontWeight: 500,
-              }}
+              style={inputStyle}
             />
           </div>
 
+          {/* Description */}
           <div>
-            <label
-              style={{
-                display: "block",
-                fontSize: "0.72rem",
-                fontWeight: 700,
-                color: "#64748b",
-                letterSpacing: "0.05em",
-                textTransform: "uppercase",
-                marginBottom: "0.4rem",
-              }}
-            >
-              Issue description
-            </label>
+            <label style={labelStyle}>Issue Description *</label>
             <textarea
-              required
-              rows={3}
-              placeholder="Describe the issue, location details, landmarks, or any visible condition..."
+              required rows={3}
+              placeholder="Describe the issue, location details, landmarks…"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
-              style={{
-                width: "100%",
-                background: "#ffffff",
-                border: "1px solid #cbd5e1",
-                padding: "0.6rem 0.85rem",
-                borderRadius: "8px",
-                color: "#0f172a",
-                fontSize: "0.88rem",
-                lineHeight: 1.5,
-              }}
+              style={{ ...inputStyle, lineHeight: '1.6', resize: 'vertical' }}
             />
           </div>
 
-          <div
-            style={{
-              display: "grid",
-              gridTemplateColumns: "1fr 1fr",
-              gap: "0.9rem",
-            }}
-          >
+          {/* Category + Photo row */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '12px' }}>
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  color: "#64748b",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  marginBottom: "0.4rem",
-                }}
-              >
-                Category
-              </label>
+              <label style={labelStyle}>Category</label>
               <select
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-                style={{
-                  width: "100%",
-                  background: "#ffffff",
-                  border: "1px solid #cbd5e1",
-                  padding: "0.6rem 0.85rem",
-                  borderRadius: "8px",
-                  color: "#0f172a",
-                  fontSize: "0.88rem",
-                }}
+                style={inputStyle}
               >
-                <option>Road & Potholes</option>
-                <option>Sanitation & Garbage</option>
-                <option>Water & Sewage</option>
+                <option>Road &amp; Potholes</option>
+                <option>Sanitation &amp; Garbage</option>
+                <option>Water &amp; Sewage</option>
                 <option>Street Lighting</option>
                 <option>Public Transport</option>
                 <option>General Civic Issue</option>
@@ -404,161 +214,69 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
             </div>
 
             <div>
-              <label
-                style={{
-                  display: "block",
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  color: "#64748b",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                  marginBottom: "0.4rem",
-                }}
-              >
-                Photo evidence
-              </label>
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  gap: "0.35rem",
-                }}
-              >
-                <div style={{ display: "flex", gap: "0.4rem" }}>
-                  <input
-                    type="url"
-                    placeholder="https://... or upload image"
-                    value={imageUrl}
-                    onChange={(e) => setImageUrl(e.target.value)}
-                    style={{
-                      flex: 1,
-                      background: "#ffffff",
-                      border: "1px solid #cbd5e1",
-                      padding: "0.6rem 0.75rem",
-                      borderRadius: "8px",
-                      color: "#0f172a",
-                      fontSize: "0.82rem",
-                    }}
-                  />
-                  <label
-                    style={{
-                      background: "#ffffff",
-                      border: "1px solid #cbd5e1",
-                      color: "#0f172a",
-                      cursor: "pointer",
-                      fontSize: "0.76rem",
-                      fontWeight: 600,
-                      padding: "0.4rem 0.75rem",
-                      borderRadius: "8px",
-                      display: "inline-flex",
-                      alignItems: "center",
-                      gap: "0.35rem",
-                      whiteSpace: "nowrap",
-                    }}
-                  >
-                    {uploadingGcp ? (
-                      <Upload size={13} className="animate-spin" />
-                    ) : (
-                      <Cloud size={13} color="#111827" />
-                    )}
-                    <span>
-                      {uploadingGcp ? "Uploading..." : "Upload image"}
-                    </span>
-                    <input
-                      type="file"
-                      accept="image/*"
-                      onChange={handleFileUpload}
-                      style={{ display: "none" }}
-                    />
-                  </label>
-                </div>
-
-                {imageUrl && (
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "0.5rem",
-                      marginTop: "0.3rem",
-                      background: "#f8fafc",
-                      padding: "0.35rem 0.5rem",
-                      borderRadius: "6px",
-                      border: "1px solid #e2e8f0",
-                    }}
-                  >
-                    <img
-                      src={imageUrl}
-                      alt="Uploaded Preview"
-                      style={{
-                        width: "60px",
-                        height: "42px",
-                        objectFit: "cover",
-                        borderRadius: "4px",
-                        border: "1px solid #cbd5e1",
-                      }}
-                      onError={(e) => {
-                        (e.target as HTMLImageElement).src =
-                          "https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600";
-                      }}
-                    />
-                    <span
-                      style={{
-                        fontSize: "0.72rem",
-                        color: "#16a34a",
-                        fontWeight: 600,
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "0.2rem",
-                      }}
-                    >
-                      <Check size={12} /> Image ready for report
-                    </span>
-                  </div>
-                )}
+              <label style={labelStyle}>Photo Evidence</label>
+              <div style={{ display: 'flex', gap: '6px' }}>
+                <input
+                  type="url"
+                  placeholder="https://… or upload"
+                  value={imageUrl}
+                  onChange={(e) => setImageUrl(e.target.value)}
+                  style={{ ...inputStyle, flex: 1, minWidth: 0 }}
+                />
+                <label style={{
+                  display: 'inline-flex', alignItems: 'center', gap: '4px',
+                  padding: '0 10px', flexShrink: 0,
+                  background: 'var(--surface)', border: '1px solid var(--border-strong)',
+                  color: 'var(--text-secondary)', fontSize: '11px', fontWeight: 600,
+                  cursor: 'pointer', borderRadius: '0', whiteSpace: 'nowrap',
+                  transition: 'all 0.15s',
+                }}>
+                  {uploadingGcp
+                    ? <Loader2 style={{ width: '12px', height: '12px', animation: 'spin 1s linear infinite' }} />
+                    : <Upload style={{ width: '12px', height: '12px' }} />
+                  }
+                  {uploadingGcp ? 'Uploading…' : 'Upload'}
+                  <input type="file" accept="image/*" onChange={handleFileUpload} style={{ display: 'none' }} />
+                </label>
               </div>
+
+              {imageUrl && (
+                <div style={{
+                  display: 'flex', alignItems: 'center', gap: '8px',
+                  marginTop: '6px', padding: '6px 8px',
+                  background: 'var(--bg-subtle)', border: '1px solid var(--border)',
+                }}>
+                  <img
+                    src={imageUrl} alt="Evidence preview"
+                    style={{ width: '52px', height: '36px', objectFit: 'cover', border: '1px solid var(--border)' }}
+                    onError={(e) => { (e.target as HTMLImageElement).src = 'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600'; }}
+                  />
+                  <span style={{ fontSize: '11px', color: 'var(--text-secondary)', display: 'flex', alignItems: 'center', gap: '4px', fontWeight: 500 }}>
+                    <Check style={{ width: '11px', height: '11px' }} /> Image ready
+                  </span>
+                </div>
+              )}
             </div>
           </div>
 
+          {/* Location */}
           <div>
-            <div
-              style={{
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "space-between",
-                marginBottom: "0.4rem",
-              }}
-            >
-              <label
-                style={{
-                  fontSize: "0.72rem",
-                  fontWeight: 700,
-                  color: "#64748b",
-                  letterSpacing: "0.05em",
-                  textTransform: "uppercase",
-                }}
-              >
-                <MapPin
-                  size={12}
-                  style={{ display: "inline", marginRight: "4px" }}
-                />
-                Location coordinates
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '6px' }}>
+              <label style={{ ...labelStyle, marginBottom: 0, display: 'flex', alignItems: 'center', gap: '4px' }}>
+                <MapPin style={{ width: '11px', height: '11px' }} /> Location Coordinates
               </label>
 
               <button
                 type="button"
                 style={{
-                  fontSize: "0.72rem",
-                  padding: "0.25rem 0.55rem",
-                  color: "#111827",
-                  background: "#f3f4f6",
-                  border: "1px solid #e5e7eb",
-                  borderRadius: "6px",
-                  fontWeight: 600,
-                  cursor: "pointer",
-                  display: "inline-flex",
-                  alignItems: "center",
-                  gap: "0.35rem",
+                  fontSize: '11px', fontWeight: 500,
+                  padding: '3px 8px',
+                  background: 'none', border: '1px solid var(--border-strong)',
+                  color: 'var(--text-secondary)', borderRadius: '0',
+                  cursor: 'pointer', transition: 'all 0.15s',
                 }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
                 onClick={() => {
                   if (navigator.geolocation) {
                     navigator.geolocation.getCurrentPosition(
@@ -578,71 +296,37 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
                 Use my GPS
               </button>
             </div>
-
-            <div
-              style={{
-                display: "grid",
-                gridTemplateColumns: "1fr 1fr",
-                gap: "0.9rem",
-              }}
-            >
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '10px' }}>
               <input
-                type="number"
-                step="0.0001"
+                type="number" step="0.0001" placeholder="Latitude"
                 value={latitude}
                 onChange={(e) => setLatitude(parseFloat(e.target.value))}
-                style={{
-                  width: "100%",
-                  background: "#ffffff",
-                  border: "1px solid #cbd5e1",
-                  padding: "0.6rem 0.85rem",
-                  borderRadius: "8px",
-                  color: "#0f172a",
-                  fontSize: "0.88rem",
-                }}
-                placeholder="Latitude"
+                style={inputStyle}
               />
               <input
-                type="number"
-                step="0.0001"
+                type="number" step="0.0001" placeholder="Longitude"
                 value={longitude}
                 onChange={(e) => setLongitude(parseFloat(e.target.value))}
-                style={{
-                  width: "100%",
-                  background: "#ffffff",
-                  border: "1px solid #cbd5e1",
-                  padding: "0.6rem 0.85rem",
-                  borderRadius: "8px",
-                  color: "#0f172a",
-                  fontSize: "0.88rem",
-                }}
-                placeholder="Longitude"
+                style={inputStyle}
               />
             </div>
           </div>
 
-          <div
-            style={{
-              display: "flex",
-              justifyContent: "flex-end",
-              gap: "0.75rem",
-              paddingTop: "1rem",
-              borderTop: "1px solid #f1f5f9",
-            }}
-          >
+          {/* Footer actions */}
+          <div style={{
+            display: 'flex', justifyContent: 'flex-end', gap: '8px',
+            paddingTop: '12px', borderTop: '1px solid var(--border)',
+          }}>
             <button
-              type="button"
-              onClick={onClose}
+              type="button" onClick={onClose}
               style={{
-                background: "#ffffff",
-                border: "1px solid #e2e8f0",
-                color: "#334155",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                padding: "0.5rem 1.1rem",
-                borderRadius: "8px",
-                cursor: "pointer",
+                padding: '7px 16px', background: 'var(--surface)',
+                border: '1px solid var(--border-strong)', color: 'var(--text-secondary)',
+                fontSize: '12px', fontWeight: 500, cursor: 'pointer', borderRadius: '0',
+                transition: 'all 0.15s',
               }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
             >
               Cancel
             </button>
@@ -650,31 +334,30 @@ export const CitizenReportModal: React.FC<CitizenReportModalProps> = ({
               type="submit"
               disabled={loading || uploadingGcp}
               style={{
-                background: "#111111",
-                border: "1px solid #111111",
-                color: "#ffffff",
-                fontSize: "0.85rem",
-                fontWeight: 600,
-                padding: "0.55rem 1.3rem",
-                borderRadius: "8px",
-                cursor: "pointer",
-                display: "inline-flex",
-                alignItems: "center",
-                gap: "0.4rem",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.1)",
+                display: 'inline-flex', alignItems: 'center', gap: '6px',
+                padding: '7px 18px',
+                background: (loading || uploadingGcp) ? 'var(--bg-subtle)' : 'var(--text-primary)',
+                border: '1px solid transparent',
+                color: (loading || uploadingGcp) ? 'var(--text-tertiary)' : 'var(--surface)',
+                fontSize: '12px', fontWeight: 600, cursor: (loading || uploadingGcp) ? 'not-allowed' : 'pointer',
+                borderRadius: '0', transition: 'all 0.15s',
+                opacity: (loading || uploadingGcp) ? 0.7 : 1,
               }}
+              onMouseEnter={e => { if (!loading && !uploadingGcp) (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+              onMouseLeave={e => { if (!loading && !uploadingGcp) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
             >
-              {loading ? (
-                "Processing..."
-              ) : (
-                <>
-                  <Send size={15} /> Submit report
-                </>
-              )}
+              {loading
+                ? <><Loader2 style={{ width: '13px', height: '13px', animation: 'spin 1s linear infinite' }} /> Processing…</>
+                : <><Send style={{ width: '13px', height: '13px' }} /> Submit Report</>
+              }
             </button>
           </div>
         </form>
       </div>
+
+      <style>{`
+        @keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+      `}</style>
     </div>
   );
 };

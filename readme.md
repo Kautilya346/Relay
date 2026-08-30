@@ -1,6 +1,6 @@
-# JanSahayak
+# Relay - The right issue. The right authority. The right action. 
 
-JanSahayak is an AI-powered civic issue management platform that helps citizens report local problems, groups related complaints into meaningful incidents, ranks their impact, and routes them to the right public authority with evidence-backed followups.
+Relay  is an AI-powered civic issue management platform that helps citizens report local problems, groups related complaints into meaningful incidents, ranks their impact, and routes them to the right public authority with evidence-backed followups.
 
 This project combines a FastAPI backend, a React frontend, and a set of AI-driven workflows for complaint classification, duplicate detection, geospatial clustering, risk scoring, and official grievance dispatch.
 
@@ -40,7 +40,7 @@ This creates three common problems:
 - High-risk issues may be missed because low-volume reports do not stand out.
 - Authorities receive incomplete information and have to investigate manually before taking action.
 
-JanSahayak addresses this by combining AI, geospatial clustering, and operational workflows to help identify the most important issues faster and route them to the correct department.
+Relay  addresses this by combining AI, geospatial clustering, and operational workflows to help identify the most important issues faster and route them to the correct department.
 
 ## How we are building it
 
@@ -391,4 +391,4 @@ Possible next steps for the project include:
 
 ## Summary
 
-JanSahayak is designed to help cities move from scattered complaint reports to actionable public service operations. It brings together AI, geospatial signal, operational policy, and authority workflows so civic issues are not just reported, but understood, prioritized, and resolved.
+Relay  is designed to help cities move from scattered complaint reports to actionable public service operations. It brings together AI, geospatial signal, operational policy, and authority workflows so civic issues are not just reported, but understood, prioritized, and resolved.

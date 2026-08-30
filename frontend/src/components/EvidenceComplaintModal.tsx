@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from "react";
-import { FileText, XCircle, Copy, Check, Sparkles } from "lucide-react";
-import { fetchComposedComplaint } from "../services/api";
+import React, { useState, useEffect } from 'react';
+import { FileText, X, Copy, Check, AlertCircle, Loader2 } from 'lucide-react';
+import { fetchComposedComplaint } from '../services/api';
 
 interface EvidenceComplaintModalProps {
   incidentId: string | null;
@@ -38,100 +38,194 @@ export const EvidenceComplaintModal: React.FC<EvidenceComplaintModalProps> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
-      style={{
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-      }}
-    >
-      <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.12)]">
-        <div className="flex items-start justify-between border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm">
-              <FileText className="h-5 w-5" />
-            </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.45)',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '0',
+        maxWidth: '620px',
+        width: '100%',
+        boxShadow: 'var(--shadow-lg)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          padding: '20px 24px 18px',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <FileText style={{ width: '16px', height: '16px', color: 'var(--text-secondary)', flexShrink: 0 }} />
             <div>
-              <h2 className="text-[1.7rem] font-semibold tracking-[-0.04em] text-slate-900">
+              <h2 style={{
+                margin: 0, fontSize: '14px', fontWeight: 600,
+                color: 'var(--text-primary)', letterSpacing: '-0.01em',
+              }}>
                 Evidence-Based Complaint Composer
               </h2>
-              <p className="mt-1 text-xs uppercase tracking-[0.08em] text-slate-500">
-                Factual grievance synthesized from verified incident metrics •{" "}
-                {incidentId}
+              <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                Factual grievance synthesized from verified incident metrics · {incidentId}
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-800"
-            aria-label="Close modal"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '28px', height: '28px',
+              background: 'none', border: '1px solid var(--border)',
+              cursor: 'pointer', color: 'var(--text-tertiary)',
+              borderRadius: '0', flexShrink: 0,
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)';
+            }}
           >
-            <XCircle className="h-4 w-4" />
+            <X style={{ width: '13px', height: '13px' }} />
           </button>
         </div>
 
-        {loading ? (
-          <div className="py-12 text-center text-sm text-slate-500">
-            Synthesizing evidence-backed grievance text...
-          </div>
-        ) : (
-          <div className="mt-5 space-y-4">
-            <div className="flex items-center justify-between gap-2 text-xs">
-              <div className="flex items-center gap-2">
-                <span className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">
-                  Priority: {data?.priority || "NORMAL"}
-                </span>
-                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-medium text-slate-600">
-                  Impact: {data?.impactScore?.toFixed(1) || "0.0"}/100
+        {/* Body */}
+        <div style={{ padding: '20px 24px' }}>
+          {loading ? (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              gap: '10px', padding: '32px 0',
+              color: 'var(--text-secondary)', fontSize: '13px',
+            }}>
+              <Loader2 style={{ width: '16px', height: '16px', animation: 'spin 1s linear infinite' }} />
+              Synthesizing evidence-backed grievance text…
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+              {/* Meta row */}
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{
+                    padding: '2px 8px', fontSize: '10px', fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    background: 'var(--text-primary)', color: 'var(--surface)',
+                  }}>
+                    {data?.priority || 'NORMAL'}
+                  </span>
+                  <span style={{
+                    padding: '2px 8px', fontSize: '10px', fontWeight: 500,
+                    color: 'var(--text-secondary)',
+                    border: '1px solid var(--border)',
+                  }}>
+                    Impact {data?.impactScore?.toFixed(1) || '0.0'}/100
+                  </span>
+                </div>
+                <span style={{
+                  fontSize: '11px', color: 'var(--text-tertiary)',
+                  fontWeight: 400, fontStyle: 'italic',
+                }}>
+                  Zero Hallucinations Guarantee
                 </span>
               </div>
-              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700">
-                <Sparkles className="h-3.5 w-3.5" />
-                Zero hallucinations guarantee
-              </span>
-            </div>
 
-            <div className="relative">
-              <div className="min-h-[160px] whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 font-mono text-[13px] leading-7 text-slate-700">
-                {data?.composedComplaintText || "No complaint text available."}
+              {/* Complaint text */}
+              <div style={{ position: 'relative' }}>
+                <div style={{
+                  padding: '14px 16px',
+                  paddingRight: '68px',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border)',
+                  fontSize: '12.5px',
+                  color: 'var(--text-primary)',
+                  lineHeight: '1.75',
+                  fontWeight: 400,
+                  whiteSpace: 'pre-line',
+                  minHeight: '130px',
+                }}>
+                  {data?.composedComplaintText || 'No complaint text available.'}
+                </div>
+                <button
+                  onClick={handleCopy}
+                  style={{
+                    position: 'absolute', top: '10px', right: '10px',
+                    display: 'flex', alignItems: 'center', gap: '4px',
+                    padding: '4px 10px',
+                    background: 'var(--surface)',
+                    border: '1px solid var(--border-strong)',
+                    color: copied ? 'var(--text-secondary)' : 'var(--text-secondary)',
+                    fontSize: '11px', fontWeight: 600,
+                    cursor: 'pointer', borderRadius: '0',
+                    transition: 'all 0.15s',
+                  }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = 'var(--bg)'; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = 'var(--surface)'; }}
+                >
+                  {copied
+                    ? <><Check style={{ width: '11px', height: '11px' }} /> Copied</>
+                    : <><Copy style={{ width: '11px', height: '11px' }} /> Copy</>
+                  }
+                </button>
               </div>
 
-              <button
-                onClick={handleCopy}
-                className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
-                type="button"
-              >
-                {copied ? (
-                  <Check className="h-3.5 w-3.5 text-emerald-600" />
-                ) : (
-                  <Copy className="h-3.5 w-3.5" />
-                )}
-                {copied ? "Copied" : "Copy"}
-              </button>
+              {/* Guardrail */}
+              <div style={{
+                display: 'flex', alignItems: 'flex-start', gap: '8px',
+                padding: '10px 12px',
+                background: 'var(--bg-subtle)',
+                border: '1px solid var(--border)',
+                fontSize: '11px', color: 'var(--text-secondary)', lineHeight: '1.6',
+              }}>
+                <AlertCircle style={{ width: '12px', height: '12px', color: 'var(--text-tertiary)', flexShrink: 0, marginTop: '1px' }} />
+                <span>
+                  <strong style={{ color: 'var(--text-primary)', fontWeight: 600 }}>Architectural Guardrail:</strong>{' '}
+                  Every statistic (reporters, duration, evidence count, SLA status) is extracted strictly from operational state and verified before transmission to municipal departments.
+                </span>
+              </div>
             </div>
+          )}
+        </div>
 
-            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
-              <span className="font-semibold text-slate-800">
-                Architectural Guardrail:
-              </span>{" "}
-              Every statistic (reporters, duration, evidence count, SLA status)
-              is extracted strictly from operational state and verified before
-              transmission to municipal departments.
-            </div>
-          </div>
-        )}
-
-        <div className="mt-6 flex justify-end border-t border-slate-200 pt-4">
+        {/* Footer */}
+        <div style={{
+          display: 'flex', justifyContent: 'flex-end',
+          padding: '14px 24px',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-subtle)',
+        }}>
           <button
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            type="button"
+            style={{
+              padding: '7px 18px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
+              color: 'var(--text-secondary)',
+              fontSize: '12px', fontWeight: 500,
+              cursor: 'pointer', borderRadius: '0',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)'; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)'; (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)'; }}
           >
             Close
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

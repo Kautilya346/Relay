@@ -1,14 +1,7 @@
-import React, { useState } from "react";
-import {
-  ShieldAlert,
-  XCircle,
-  Send,
-  Edit3,
-  Lock,
-  AlertTriangle,
-} from "lucide-react";
-import type { FollowupPreview } from "../types";
-import { approveFollowup } from "../services/api";
+import React, { useState } from 'react';
+import { ShieldAlert, X, Send, Edit3, Lock, AlertTriangle, Loader2 } from 'lucide-react';
+import type { FollowupPreview } from '../types';
+import { approveFollowup } from '../services/api';
 
 interface FollowupApprovalModalProps {
   preview: FollowupPreview | null;
@@ -52,122 +45,222 @@ export const FollowupApprovalModal: React.FC<FollowupApprovalModalProps> = ({
   };
 
   return (
-    <div
-      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 backdrop-blur-sm p-4"
-      style={{
-        background: "rgba(15, 23, 42, 0.45)",
-        backdropFilter: "blur(6px)",
-        WebkitBackdropFilter: "blur(6px)",
-      }}
-    >
-      <div
-        className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.12)]"
-        style={{
-          maxWidth: "980px",
-          borderRadius: "16px",
-        }}
-      >
-        <div className="flex items-start justify-between border-b border-slate-200 pb-4">
-          <div className="flex items-center gap-3">
-            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm">
-              <ShieldAlert className="h-5 w-5" />
-            </div>
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.45)',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '0',
+        maxWidth: '620px',
+        width: '100%',
+        boxShadow: 'var(--shadow-lg)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}>
+        {/* Header */}
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          padding: '20px 24px 18px',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ShieldAlert style={{ width: '16px', height: '16px', color: 'var(--text-secondary)', flexShrink: 0 }} />
             <div>
-              <h2 className="text-[1.7rem] font-semibold tracking-[-0.04em] text-slate-900">
-                Human Approval Required: Follow-Up
+              <h2 style={{
+                margin: 0, fontSize: '14px', fontWeight: 600,
+                color: 'var(--text-primary)', letterSpacing: '-0.01em',
+              }}>
+                Human Approval Required — Follow-Up Notice
               </h2>
-              <p className="mt-1 text-xs uppercase tracking-[0.08em] text-slate-500">
-                Consequential escalation • Incident{" "}
-                <span className="font-semibold text-slate-800">
-                  {preview.incidentId}
-                </span>
+              <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                Consequential escalation · Incident{' '}
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{preview.incidentId}</span>
               </p>
             </div>
           </div>
 
           <button
             onClick={onClose}
-            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-800"
-            aria-label="Close modal"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '28px', height: '28px',
+              background: 'none', border: '1px solid var(--border)',
+              cursor: 'pointer', color: 'var(--text-tertiary)',
+              borderRadius: '0', flexShrink: 0,
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)';
+            }}
           >
-            <XCircle className="h-4 w-4" />
+            <X style={{ width: '13px', height: '13px' }} />
           </button>
         </div>
 
-        <div className="mt-5 rounded-xl border border-slate-200 bg-slate-50 p-3">
-          <div className="flex items-center justify-between gap-3 text-xs text-slate-600">
-            <div className="flex items-center gap-2">
-              <Lock className="h-4 w-4 text-slate-700" />
-              <span>Cryptographic authorization:</span>
-              <code className="rounded bg-white px-1.5 py-0.5 font-mono text-slate-800 border border-slate-200">
+        {/* Body */}
+        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
+
+          {/* Auth ID row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '9px 12px',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border)',
+            fontSize: '11px', color: 'var(--text-secondary)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Lock style={{ width: '11px', height: '11px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
+              <span style={{ color: 'var(--text-tertiary)' }}>Auth ID:</span>
+              <code style={{
+                fontFamily: 'monospace', fontSize: '10.5px',
+                color: 'var(--text-primary)', fontWeight: 700,
+                background: 'var(--surface)', padding: '1px 6px',
+                border: '1px solid var(--border-strong)',
+              }}>
                 {preview.authorizationId}
               </code>
             </div>
-            <div>
-              Recipient:{" "}
-              <span className="font-semibold text-slate-800">
-                {preview.targetAuthority}
+            <span style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
+              → <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{preview.targetAuthority}</span>
+            </span>
+          </div>
+
+          {/* Follow-up content */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <label style={{
+                fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
+                textTransform: 'uppercase', color: 'var(--text-tertiary)',
+              }}>
+                Follow-Up Notice
+              </label>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  fontSize: '11px', fontWeight: 500,
+                  color: 'var(--text-secondary)',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', padding: '0',
+                  textDecoration: 'underline', textDecorationColor: 'var(--border-strong)',
+                }}
+              >
+                <Edit3 style={{ width: '11px', height: '11px' }} />
+                {isEditing ? 'Done Editing' : 'Edit Text'}
+              </button>
+            </div>
+
+            {isEditing ? (
+              <textarea
+                value={followupText}
+                onChange={(e) => setFollowupText(e.target.value)}
+                rows={6}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '12px 14px',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border-strong)',
+                  outline: 'none',
+                  fontSize: '12.5px', color: 'var(--text-primary)',
+                  lineHeight: '1.75', fontFamily: 'inherit',
+                  resize: 'vertical', borderRadius: '0',
+                }}
+              />
+            ) : (
+              <div style={{
+                padding: '12px 14px',
+                background: 'var(--bg)',
+                border: '1px solid var(--border)',
+                fontSize: '12.5px', color: 'var(--text-primary)',
+                lineHeight: '1.75', whiteSpace: 'pre-line', minHeight: '100px',
+                fontWeight: 400,
+              }}>
+                {followupText || preview.followupText}
+              </div>
+            )}
+          </div>
+
+          {/* Hash + Expiry */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{
+              padding: '8px 10px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border)',
+              fontSize: '10.5px', color: 'var(--text-tertiary)',
+              overflow: 'hidden',
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Payload SHA-256
+              </div>
+              <code style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                {preview.payloadHash.substring(0, 20)}…
+              </code>
+            </div>
+            <div style={{
+              padding: '8px 10px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border)',
+              fontSize: '10.5px', color: 'var(--text-tertiary)',
+              textAlign: 'right',
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Token Expires
+              </div>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                {new Date(preview.expiresAt).toLocaleTimeString()}
               </span>
             </div>
           </div>
-        </div>
 
-        <div className="mt-5 space-y-3">
-          <div className="flex items-center justify-between gap-3">
-            <label className="text-[11px] font-semibold uppercase tracking-[0.08em] text-slate-500">
-              Evidence-backed factual follow-up notice
-            </label>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="inline-flex items-center gap-1 text-xs font-medium text-slate-700 hover:text-slate-900"
-              type="button"
-            >
-              <Edit3 className="h-3.5 w-3.5" />
-              {isEditing ? "Done editing" : "Edit text"}
-            </button>
-          </div>
-
-          {isEditing ? (
-            <textarea
-              value={followupText}
-              onChange={(e) => setFollowupText(e.target.value)}
-              rows={7}
-              className="w-full rounded-xl border border-slate-300 bg-white p-3 text-sm text-slate-800 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200"
-            />
-          ) : (
-            <div className="whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 font-mono text-[13px] leading-7 text-slate-700">
-              {followupText || preview.followupText}
+          {/* Error */}
+          {error && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '9px 12px',
+              background: 'var(--priority-critical-bg)',
+              border: '1px solid var(--priority-critical-border)',
+              fontSize: '12px', color: 'var(--priority-critical)',
+            }}>
+              <AlertTriangle style={{ width: '13px', height: '13px', flexShrink: 0 }} />
+              {error}
             </div>
           )}
         </div>
 
-        <div className="mt-5 grid grid-cols-2 gap-3 text-[11px] text-slate-500">
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 truncate">
-            <span className="text-slate-500">Payload SHA-256:</span>{" "}
-            <span className="font-mono text-slate-700">
-              {preview.payloadHash.substring(0, 20)}...
-            </span>
-          </div>
-          <div className="rounded-lg border border-slate-200 bg-slate-50 p-2.5 text-right">
-            <span className="text-slate-500">Expires:</span>{" "}
-            <span className="font-mono text-slate-700">
-              {new Date(preview.expiresAt).toLocaleTimeString()}
-            </span>
-          </div>
-        </div>
-
-        {error && (
-          <div className="mt-5 flex items-center gap-2 rounded-xl border border-rose-200 bg-rose-50 p-3 text-xs text-rose-700">
-            <AlertTriangle className="h-4 w-4 text-rose-600" />
-            {error}
-          </div>
-        )}
-
-        <div className="mt-6 flex items-center justify-end gap-3 border-t border-slate-200 pt-4">
+        {/* Footer */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px',
+          padding: '14px 24px',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-subtle)',
+        }}>
           <button
             onClick={onClose}
-            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
-            type="button"
+            style={{
+              padding: '7px 16px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
+              color: 'var(--text-secondary)',
+              fontSize: '12px', fontWeight: 500,
+              cursor: 'pointer', borderRadius: '0',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+            }}
           >
             Don’t send
           </button>
@@ -175,14 +268,34 @@ export const FollowupApprovalModal: React.FC<FollowupApprovalModalProps> = ({
           <button
             onClick={handleApprove}
             disabled={loading}
-            className="inline-flex items-center gap-2 rounded-lg bg-slate-900 px-5 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-slate-800 disabled:cursor-not-allowed disabled:opacity-60"
-            type="button"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '7px 18px',
+              background: loading ? 'var(--bg-subtle)' : 'var(--text-primary)',
+              border: '1px solid transparent',
+              color: loading ? 'var(--text-tertiary)' : 'var(--surface)',
+              fontSize: '12px', fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              borderRadius: '0', transition: 'all 0.15s',
+              letterSpacing: '0.01em',
+            }}
+            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+            onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
           >
-            <Send className="h-4 w-4" />
-            {loading ? "Dispatching..." : "Approve & send to authority"}
+            {loading
+              ? <><Loader2 style={{ width: '13px', height: '13px', animation: 'spin 1s linear infinite' }} /> Dispatching…</>
+              : <><Send style={{ width: '13px', height: '13px' }} /> Approve & Send</>
+            }
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };

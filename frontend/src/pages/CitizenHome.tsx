@@ -76,7 +76,7 @@ export const CitizenHome: React.FC<CitizenHomeProps> = ({
             maxWidth: '440px',
             marginBottom: '2rem',
           }}>
-            JanSahayak clusters similar complaints, calculates community impact, and enforces escalation policies directly with municipal authorities.
+            Relay  clusters similar complaints, calculates community impact, and enforces escalation policies directly with municipal authorities.
           </p>
 
           <button onClick={onOpenReportModal} className="btn btn-dark">
@@ -89,12 +89,12 @@ export const CitizenHome: React.FC<CitizenHomeProps> = ({
         <div style={{ display: 'flex', flexDirection: 'column' }}>
           {/* Image placeholder */}
           <div style={{ flex: 1, minHeight: '240px' }}>
-  <img
-    src="https://images.unsplash.com/photo-1558690194-5aaa922b59b6?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
-    alt="Aerial view of a busy Indian city street with civic infrastructure"
-    style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
-  />
-</div>
+            <img
+              src="https://images.unsplash.com/photo-1558690194-5aaa922b59b6?q=80&w=1171&auto=format&fit=crop&ixlib=rb-4.1.0&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D"
+              alt="Aerial view of a busy Indian city street with civic infrastructure"
+              style={{ width: '100%', height: '100%', objectFit: 'cover', borderRadius: '8px' }}
+            />
+          </div>
 
           {/* Stats row */}
           <div style={{
