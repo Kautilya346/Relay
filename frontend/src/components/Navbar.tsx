@@ -9,11 +9,11 @@ interface NavbarProps {
 }
 
 const NAV_ITEMS = [
-  { id: 'citizen',   label: 'Citizens',   icon: Users },
-  { id: 'authority', label: 'Authority',  icon: ShieldAlert },
-  { id: 'agent',     label: 'AI Audit',   icon: Cpu },
-  { id: 'registry',  label: 'Registry',   icon: Building2 },
-  { id: 'admin',     label: 'Policies',   icon: SlidersHorizontal },
+  { id: 'citizen', label: 'Citizens', icon: Users },
+  { id: 'authority', label: 'Authority', icon: ShieldAlert },
+  { id: 'agent', label: 'AI Audit', icon: Cpu },
+  { id: 'registry', label: 'Registry', icon: Building2 },
+  { id: 'admin', label: 'Policies', icon: SlidersHorizontal },
 ] as const;
 
 export const Navbar: React.FC<NavbarProps> = ({
@@ -70,7 +70,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             letterSpacing: '-0.03em',
             color: 'var(--text-primary)',
           }}>
-            JanSahayak
+            Relay
           </span>
         </button>
 

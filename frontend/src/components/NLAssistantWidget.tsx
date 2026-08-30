@@ -15,7 +15,7 @@ export const NLAssistantWidget: React.FC<NLAssistantWidgetProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [query, setQuery] = useState('');
   const [history, setHistory] = useState<Array<{ type: 'user' | 'assistant'; text: string; intent?: UserIntentResponse }>>([
-    { type: 'assistant', text: 'Namaste! I am JanSahayak AI. Ask me about your complaints, request follow-ups, or report new civic issues.' },
+    { type: 'assistant', text: 'Namaste! I am Relay  AI. Ask me about your complaints, request follow-ups, or report new civic issues.' },
   ]);
   const [loading, setLoading] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -54,7 +54,7 @@ export const NLAssistantWidget: React.FC<NLAssistantWidgetProps> = ({
           style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', padding: '0.6rem 1rem', boxShadow: 'var(--shadow-md)' }}
         >
           <Bot size={15} />
-          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 400 }}>Ask JanSahayak AI</span>
+          <span style={{ fontSize: 'var(--text-xs)', fontWeight: 400 }}>Ask Relay  AI</span>
         </button>
       ) : (
         <div style={{
@@ -76,7 +76,7 @@ export const NLAssistantWidget: React.FC<NLAssistantWidgetProps> = ({
           }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
               <Bot size={14} color="var(--text-primary)" />
-              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 400, letterSpacing: '-0.02em' }}>JanSahayak AI</span>
+              <span style={{ fontSize: 'var(--text-sm)', fontWeight: 400, letterSpacing: '-0.02em' }}>Relay  AI</span>
             </div>
             <button onClick={() => setIsOpen(false)} className="btn btn-ghost btn-sm" style={{ padding: '0.25rem' }}>
               <X size={14} />
