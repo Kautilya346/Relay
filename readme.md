@@ -1,5 +1,30 @@
 # Relay - The right issue. The right authority. The right action. 
 
+<div align="center">
+
+[![Hackathon Project](https://img.shields.io/badge/Hackathon-Project-orange?style=for-the-badge)]()
+[![Status](https://img.shields.io/badge/Status-Active%20Development-brightgreen?style=for-the-badge)]()
+[![License](https://img.shields.io/badge/License-Unspecified-lightgrey?style=for-the-badge)]()
+
+[![Python](https://img.shields.io/badge/Python-3.11%2B-3776AB?style=for-the-badge&logo=python&logoColor=white)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?style=for-the-badge&logo=fastapi&logoColor=white)](https://fastapi.tiangolo.com/)
+[![React](https://img.shields.io/badge/React-Frontend-61DAFB?style=for-the-badge&logo=react&logoColor=black)](https://react.dev/)
+[![Vite](https://img.shields.io/badge/Vite-Build%20Tool-646CFF?style=for-the-badge&logo=vite&logoColor=white)](https://vitejs.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-Typed-3178C6?style=for-the-badge&logo=typescript&logoColor=white)](https://www.typescriptlang.org/)
+
+[![Google Gemini](https://img.shields.io/badge/Google%20Gemini-AI%20Engine-4285F4?style=for-the-badge&logo=googlegemini&logoColor=white)](https://ai.google.dev/)
+[![Vertex AI](https://img.shields.io/badge/Vertex%20AI-Supported-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/vertex-ai)
+[![Firestore](https://img.shields.io/badge/Firestore-Database-FFA000?style=for-the-badge&logo=firebase&logoColor=white)](https://firebase.google.com/docs/firestore)
+[![Cloud Storage](https://img.shields.io/badge/Cloud%20Storage-Evidence%20Files-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/storage)
+[![Pub/Sub](https://img.shields.io/badge/Pub%2FSub-Event%20Bus-4285F4?style=for-the-badge&logo=googlecloud&logoColor=white)](https://cloud.google.com/pubsub)
+[![Playwright](https://img.shields.io/badge/Playwright-Browser%20Automation-2EAD33?style=for-the-badge&logo=playwright&logoColor=white)](https://playwright.dev/)
+
+</div>
+
+<div align="center">
+  <img src="frontend/public/mascot.png" alt="Relay mascot" width="420" />
+</div>
+
 Relay  is an AI-powered civic issue management platform that helps citizens report local problems, groups related complaints into meaningful incidents, ranks their impact, and routes them to the right public authority with evidence-backed followups.
 
 This project combines a FastAPI backend, a React frontend, and a set of AI-driven workflows for complaint classification, duplicate detection, geospatial clustering, risk scoring, and official grievance dispatch.
@@ -76,31 +101,17 @@ The frontend is built with React and Vite. It gives different user roles a view 
 5. The escalation policy decides whether the issue should stay local, escalate, or be dispatched to an authority.
 6. The system may send an official complaint, use a browser-based portal flow, or store evidence for follow-up verification.
 
-## High level system overview
+## Architecture
 
-```mermaid
-flowchart LR
-    A[Citizen App] --> B[Complaint Submission]
-    B --> C[FastAPI Backend]
-    C --> D[AI Classifier]
-    C --> E[Incident Matcher]
-    C --> F[Impact Engine]
-    C --> G[Escalation Policy]
-    D --> H[Firestore]
-    E --> H
-    F --> H
-    G --> H
-    B --> I[Cloud Storage]
-    H --> J[Authority Dashboard]
-    H --> K[Admin Dashboard]
-    H --> L[Audit and Analytics]
-    G --> M[Dispatch Orchestrator]
-    M --> N[SMTP Email]
-    M --> O[Government Website API]
-    M --> P[Browser Portal Flow]
-    J --> Q[Authority Actions]
-    Q --> H
-```
+<div align="center">
+  <img src="frontend/public/high_level_architecture.png" alt="High level system overview" width="1200" />
+</div>
+
+## Data and event flow
+
+<div align="center">
+  <img src="frontend/public/data_and_ev_flow.png" alt="Data and event flow" width="1200" />
+</div>
 
 ## Complaint workflow
 
@@ -122,26 +133,6 @@ flowchart TD
     L --> N[Email, portal, or browser handoff]
     N --> O[Audit event stored]
     M --> O
-```
-
-## Data and event flow
-
-```mermaid
-flowchart LR
-    A[Frontend Dashboard] --> B[FastAPI API]
-    B --> C[Firestore Repository]
-    C --> D[Incident Records]
-    C --> E[Complaint Records]
-    C --> F[Audit Events]
-    B --> G[Cloud Storage]
-    B --> H[Event Bus]
-    H --> I[Pub/Sub]
-    I --> J[Monitoring and dispatch workers]
-    J --> K[SMTP dispatch]
-    J --> L[Portal discovery and browser automation]
-    D --> A
-    E --> A
-    F --> A
 ```
 
 ## Authority dispatch and audit loop
@@ -218,6 +209,33 @@ Using a Gemini-powered search and discovery flow, the system can identify the co
 The system logs key events such as classification, matching, escalation, dispatch, and impact recalculation so agent decisions remain traceable.
 
 ## Technology stack
+
+<div align="center">
+
+![Frontend](https://img.shields.io/badge/-Frontend-black?style=flat-square)
+![React](https://img.shields.io/badge/React-20232A?style=flat-square&logo=react&logoColor=61DAFB)
+![Vite](https://img.shields.io/badge/Vite-646CFF?style=flat-square&logo=vite&logoColor=white)
+![TypeScript](https://img.shields.io/badge/TypeScript-3178C6?style=flat-square&logo=typescript&logoColor=white)
+![Lucide](https://img.shields.io/badge/Lucide-Icons-F56565?style=flat-square&logo=lucide&logoColor=white)
+
+![Backend](https://img.shields.io/badge/-Backend-black?style=flat-square)
+![Python](https://img.shields.io/badge/Python-3776AB?style=flat-square&logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-009688?style=flat-square&logo=fastapi&logoColor=white)
+![Pydantic](https://img.shields.io/badge/Pydantic-E92063?style=flat-square&logo=pydantic&logoColor=white)
+![Playwright](https://img.shields.io/badge/Playwright-2EAD33?style=flat-square&logo=playwright&logoColor=white)
+![Pytest](https://img.shields.io/badge/Pytest-0A9EDC?style=flat-square&logo=pytest&logoColor=white)
+
+![AI](https://img.shields.io/badge/-AI%20%26%20Automation-black?style=flat-square)
+![Gemini](https://img.shields.io/badge/Google%20Gemini-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
+![Vertex AI](https://img.shields.io/badge/Vertex%20AI-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+
+![Data](https://img.shields.io/badge/-Data%20%26%20Storage-black?style=flat-square)
+![Firestore](https://img.shields.io/badge/Firestore-FFA000?style=flat-square&logo=firebase&logoColor=white)
+![Cloud Storage](https://img.shields.io/badge/Cloud%20Storage-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Pub/Sub](https://img.shields.io/badge/Pub%2FSub-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Google Auth](https://img.shields.io/badge/Google%20Auth-4285F4?style=flat-square&logo=google&logoColor=white)
+
+</div>
 
 ### Frontend
 
@@ -324,6 +342,21 @@ The project expects environment variables for Google AI and cloud services, incl
 
 ## Google products we use
 
+<div align="center">
+
+![Gemini](https://img.shields.io/badge/Gemini-Classification%20%26%20Reasoning-4285F4?style=flat-square&logo=googlegemini&logoColor=white)
+![Gen AI SDK](https://img.shields.io/badge/Gen%20AI%20SDK-Model%20Client-4285F4?style=flat-square&logo=google&logoColor=white)
+![Vertex AI](https://img.shields.io/badge/Vertex%20AI-Managed%20AI%20Platform-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![AI Studio](https://img.shields.io/badge/AI%20Studio-API%20Keys-4285F4?style=flat-square&logo=google&logoColor=white)
+![Firestore](https://img.shields.io/badge/Firestore-Operational%20DB-FFA000?style=flat-square&logo=firebase&logoColor=white)
+![Cloud Storage](https://img.shields.io/badge/Cloud%20Storage-Evidence%20Files-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Pub/Sub](https://img.shields.io/badge/Pub%2FSub-Event%20Messaging-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+![Google Auth](https://img.shields.io/badge/Google%20Auth-Service%20Accounts-4285F4?style=flat-square&logo=google&logoColor=white)
+![Search Grounding](https://img.shields.io/badge/Search%20Grounding-Authority%20Discovery-4285F4?style=flat-square&logo=google&logoColor=white)
+![GCP](https://img.shields.io/badge/Google%20Cloud-Platform-4285F4?style=flat-square&logo=googlecloud&logoColor=white)
+
+</div>
+
 This project uses several Google technologies to power its AI, storage, message flow, and cloud operations.
 
 ### Google Gemini
@@ -392,3 +425,11 @@ Possible next steps for the project include:
 ## Summary
 
 Relay  is designed to help cities move from scattered complaint reports to actionable public service operations. It brings together AI, geospatial signal, operational policy, and authority workflows so civic issues are not just reported, but understood, prioritized, and resolved.
+
+<div align="center">
+
+---
+
+**Built for a hackathon, with citizens and cities in mind.**
+
+</div>
