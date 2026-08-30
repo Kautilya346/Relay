@@ -4,6 +4,20 @@ JanSahayak is an AI-powered civic issue management platform that helps citizens 
 
 This project combines a FastAPI backend, a React frontend, and a set of AI-driven workflows for complaint classification, duplicate detection, geospatial clustering, risk scoring, and official grievance dispatch.
 
+## Project screenshots
+
+<div align="center">
+  <img src="frontend/public/s111.png" alt="JanSahayak dashboard overview" width="900" />
+</div>
+
+<div align="center">
+  <img src="frontend/public/s222.png" alt="Citizen complaint and issue reporting flow" width="900" />
+</div>
+
+<div align="center">
+  <img src="frontend/public/s333.png" alt="Authority and audit workflow dashboard" width="900" />
+</div>
+
 ## What we are building
 
 We are building a system that turns scattered citizen complaints into actionable civic incidents.

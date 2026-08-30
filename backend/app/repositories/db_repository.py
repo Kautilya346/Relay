@@ -10,6 +10,8 @@ from app.models.domain import (
     ExternalCaseModel,
     AuthorizationModel,
     BrowserSessionModel,
+    ActorType,
+    current_iso_timestamp,
 )
 from app.services.geo_service import calculate_haversine_distance
 

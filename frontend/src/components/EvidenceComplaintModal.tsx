@@ -1,6 +1,6 @@
-import React, { useState, useEffect } from 'react';
-import { FileText, XCircle, Copy, Check, Sparkles } from 'lucide-react';
-import { fetchComposedComplaint } from '../services/api';
+import React, { useState, useEffect } from "react";
+import { FileText, XCircle, Copy, Check, Sparkles } from "lucide-react";
+import { fetchComposedComplaint } from "../services/api";
 
 interface EvidenceComplaintModalProps {
   incidentId: string | null;
@@ -38,74 +38,95 @@ export const EvidenceComplaintModal: React.FC<EvidenceComplaintModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in">
-      <div className="bg-slate-900 border border-indigo-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-indigo-500/20 text-indigo-400 rounded-xl">
-              <FileText className="w-6 h-6" />
+    <div
+      className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/45 p-4"
+      style={{
+        backdropFilter: "blur(6px)",
+        WebkitBackdropFilter: "blur(6px)",
+      }}
+    >
+      <div className="w-full max-w-3xl rounded-2xl border border-slate-200 bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.12)]">
+        <div className="flex items-start justify-between border-b border-slate-200 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-11 w-11 items-center justify-center rounded-xl border border-slate-200 bg-slate-900 text-white shadow-sm">
+              <FileText className="h-5 w-5" />
             </div>
             <div>
-              <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
+              <h2 className="text-[1.7rem] font-semibold tracking-[-0.04em] text-slate-900">
                 Evidence-Based Complaint Composer
               </h2>
-              <p className="text-xs text-slate-400">
-                Factual grievance synthesized from verified incident metrics • {incidentId}
+              <p className="mt-1 text-xs uppercase tracking-[0.08em] text-slate-500">
+                Factual grievance synthesized from verified incident metrics •{" "}
+                {incidentId}
               </p>
             </div>
           </div>
+
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+            className="flex h-9 w-9 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-500 transition hover:text-slate-800"
+            aria-label="Close modal"
           >
-            <XCircle className="w-5 h-5" />
+            <XCircle className="h-4 w-4" />
           </button>
         </div>
 
         {loading ? (
-          <div className="py-12 text-center text-slate-400 text-sm animate-pulse">
+          <div className="py-12 text-center text-sm text-slate-500">
             Synthesizing evidence-backed grievance text...
           </div>
         ) : (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between text-xs">
+          <div className="mt-5 space-y-4">
+            <div className="flex items-center justify-between gap-2 text-xs">
               <div className="flex items-center gap-2">
-                <span className="px-2.5 py-1 bg-indigo-950 text-indigo-300 border border-indigo-500/30 rounded-lg font-semibold">
-                  Priority: {data?.priority || 'NORMAL'}
+                <span className="rounded-full border border-slate-300 bg-slate-100 px-2.5 py-1 font-semibold text-slate-700">
+                  Priority: {data?.priority || "NORMAL"}
                 </span>
-                <span className="px-2.5 py-1 bg-slate-800 text-slate-300 rounded-lg">
-                  Impact: {data?.impactScore?.toFixed(1) || '0.0'}/100
+                <span className="rounded-full border border-slate-200 bg-slate-50 px-2.5 py-1 font-medium text-slate-600">
+                  Impact: {data?.impactScore?.toFixed(1) || "0.0"}/100
                 </span>
               </div>
-              <span className="text-emerald-400 text-[11px] flex items-center gap-1">
-                <Sparkles className="w-3.5 h-3.5" />
-                Zero Hallucinations Guarantee
+              <span className="inline-flex items-center gap-1 text-[11px] font-medium text-emerald-700">
+                <Sparkles className="h-3.5 w-3.5" />
+                Zero hallucinations guarantee
               </span>
             </div>
 
             <div className="relative">
-              <div className="p-4 bg-slate-950/80 border border-slate-800 rounded-xl text-sm text-slate-200 font-mono whitespace-pre-line leading-relaxed min-h-[160px]">
-                {data?.composedComplaintText || 'No complaint text available.'}
+              <div className="min-h-[160px] whitespace-pre-line rounded-xl border border-slate-200 bg-slate-50 p-4 font-mono text-[13px] leading-7 text-slate-700">
+                {data?.composedComplaintText || "No complaint text available."}
               </div>
+
               <button
                 onClick={handleCopy}
-                className="absolute top-3 right-3 p-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg text-xs flex items-center gap-1.5 shadow transition-colors"
+                className="absolute right-3 top-3 inline-flex items-center gap-1.5 rounded-lg border border-slate-200 bg-white px-2.5 py-1.5 text-xs font-medium text-slate-700 transition hover:bg-slate-50"
+                type="button"
               >
-                {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
-                {copied ? 'Copied' : 'Copy'}
+                {copied ? (
+                  <Check className="h-3.5 w-3.5 text-emerald-600" />
+                ) : (
+                  <Copy className="h-3.5 w-3.5" />
+                )}
+                {copied ? "Copied" : "Copy"}
               </button>
             </div>
 
-            <div className="p-3 bg-slate-950/50 border border-slate-800/80 rounded-xl text-xs text-slate-400 leading-relaxed">
-              <span className="text-slate-300 font-semibold">Architectural Guardrail:</span> Every statistic (reporters, duration, evidence count, SLA status) is extracted strictly from operational state and verified before transmission to municipal departments.
+            <div className="rounded-xl border border-slate-200 bg-slate-50 p-3 text-xs leading-relaxed text-slate-600">
+              <span className="font-semibold text-slate-800">
+                Architectural Guardrail:
+              </span>{" "}
+              Every statistic (reporters, duration, evidence count, SLA status)
+              is extracted strictly from operational state and verified before
+              transmission to municipal departments.
             </div>
           </div>
         )}
 
-        <div className="flex justify-end pt-2 border-t border-slate-800">
+        <div className="mt-6 flex justify-end border-t border-slate-200 pt-4">
           <button
             onClick={onClose}
-            className="px-5 py-2 bg-slate-800 hover:bg-slate-700 text-slate-200 rounded-xl text-xs font-semibold transition-colors"
+            className="rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-medium text-slate-700 transition hover:bg-slate-50"
+            type="button"
           >
             Close
           </button>
