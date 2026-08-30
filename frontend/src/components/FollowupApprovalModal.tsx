@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { ShieldAlert, XCircle, Send, Edit3, Lock, AlertTriangle } from 'lucide-react';
+import { ShieldAlert, X, Send, Edit3, Lock, AlertTriangle, Loader2 } from 'lucide-react';
 import type { FollowupPreview } from '../types';
 import { approveFollowup } from '../services/api';
 
@@ -45,108 +45,255 @@ export const FollowupApprovalModal: React.FC<FollowupApprovalModalProps> = ({
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-md p-4 animate-in fade-in">
-      <div className="bg-slate-900 border border-amber-500/40 rounded-2xl max-w-2xl w-full p-6 shadow-2xl space-y-6">
+    <div style={{
+      position: 'fixed', inset: 0, zIndex: 50,
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      background: 'rgba(0,0,0,0.45)',
+      padding: '16px',
+    }}>
+      <div style={{
+        background: 'var(--surface)',
+        border: '1px solid var(--border-strong)',
+        borderRadius: '0',
+        maxWidth: '620px',
+        width: '100%',
+        boxShadow: 'var(--shadow-lg)',
+        fontFamily: 'Inter, system-ui, sans-serif',
+      }}>
         {/* Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-4">
-          <div className="flex items-center space-x-3">
-            <div className="p-2.5 bg-amber-500/20 text-amber-400 rounded-xl">
-              <ShieldAlert className="w-6 h-6" />
-            </div>
+        <div style={{
+          display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between',
+          padding: '20px 24px 18px',
+          borderBottom: '1px solid var(--border)',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <ShieldAlert style={{ width: '16px', height: '16px', color: 'var(--text-secondary)', flexShrink: 0 }} />
             <div>
-              <h2 className="text-xl font-bold text-slate-100 flex items-center gap-2">
-                Human Approval Required: Follow-Up
+              <h2 style={{
+                margin: 0, fontSize: '14px', fontWeight: 600,
+                color: 'var(--text-primary)', letterSpacing: '-0.01em',
+              }}>
+                Human Approval Required — Follow-Up Notice
               </h2>
-              <p className="text-xs text-slate-400">
-                Consequential Escalation • Incident <span className="text-indigo-400 font-semibold">{preview.incidentId}</span>
+              <p style={{ margin: '3px 0 0', fontSize: '11px', color: 'var(--text-tertiary)', fontWeight: 400 }}>
+                Consequential escalation · Incident{' '}
+                <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{preview.incidentId}</span>
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1.5 text-slate-400 hover:text-slate-200 hover:bg-slate-800 rounded-lg transition-colors"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: '28px', height: '28px',
+              background: 'none', border: '1px solid var(--border)',
+              cursor: 'pointer', color: 'var(--text-tertiary)',
+              borderRadius: '0', flexShrink: 0,
+              transition: 'border-color 0.15s, color 0.15s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-tertiary)';
+            }}
           >
-            <XCircle className="w-5 h-5" />
+            <X style={{ width: '13px', height: '13px' }} />
           </button>
         </div>
 
-        {/* Security & Verification Banner */}
-        <div className="p-3 bg-amber-950/30 border border-amber-500/30 rounded-xl flex items-center justify-between text-xs">
-          <div className="flex items-center space-x-2 text-amber-300">
-            <Lock className="w-4 h-4 text-amber-400" />
-            <span>Cryptographic Authorization: <code className="bg-slate-950 px-1.5 py-0.5 rounded text-amber-200">{preview.authorizationId}</code></span>
-          </div>
-          <div className="text-slate-400">
-            Recipient: <span className="font-semibold text-slate-200">{preview.targetAuthority}</span>
-          </div>
-        </div>
+        {/* Body */}
+        <div style={{ padding: '20px 24px', display: 'flex', flexDirection: 'column', gap: '16px' }}>
 
-        {/* Follow-up Factual Content */}
-        <div className="space-y-2">
-          <div className="flex items-center justify-between">
-            <label className="text-xs font-semibold text-slate-300 uppercase tracking-wider">
-              Evidence-Backed Factual Follow-Up Notice:
-            </label>
-            <button
-              onClick={() => setIsEditing(!isEditing)}
-              className="text-xs text-indigo-400 hover:text-indigo-300 flex items-center gap-1"
-            >
-              <Edit3 className="w-3.5 h-3.5" />
-              {isEditing ? 'Done Editing' : 'Edit Text'}
-            </button>
+          {/* Auth ID row */}
+          <div style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            padding: '9px 12px',
+            background: 'var(--bg-subtle)',
+            border: '1px solid var(--border)',
+            fontSize: '11px', color: 'var(--text-secondary)',
+          }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+              <Lock style={{ width: '11px', height: '11px', color: 'var(--text-tertiary)', flexShrink: 0 }} />
+              <span style={{ color: 'var(--text-tertiary)' }}>Auth ID:</span>
+              <code style={{
+                fontFamily: 'monospace', fontSize: '10.5px',
+                color: 'var(--text-primary)', fontWeight: 700,
+                background: 'var(--surface)', padding: '1px 6px',
+                border: '1px solid var(--border-strong)',
+              }}>
+                {preview.authorizationId}
+              </code>
+            </div>
+            <span style={{ fontSize: '11px', color: 'var(--text-tertiary)' }}>
+              → <span style={{ color: 'var(--text-secondary)', fontWeight: 600 }}>{preview.targetAuthority}</span>
+            </span>
           </div>
 
-          {isEditing ? (
-            <textarea
-              value={followupText}
-              onChange={(e) => setFollowupText(e.target.value)}
-              rows={6}
-              className="w-full bg-slate-950 border border-indigo-500/50 rounded-xl p-3 text-sm text-slate-200 focus:outline-none focus:ring-2 focus:ring-indigo-500"
-            />
-          ) : (
-            <div className="p-4 bg-slate-950/70 border border-slate-800 rounded-xl text-sm text-slate-300 font-mono whitespace-pre-line leading-relaxed">
-              {followupText || preview.followupText}
+          {/* Follow-up content */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+              <label style={{
+                fontSize: '10px', fontWeight: 700, letterSpacing: '0.08em',
+                textTransform: 'uppercase', color: 'var(--text-tertiary)',
+              }}>
+                Follow-Up Notice
+              </label>
+              <button
+                onClick={() => setIsEditing(!isEditing)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: '4px',
+                  fontSize: '11px', fontWeight: 500,
+                  color: 'var(--text-secondary)',
+                  background: 'none', border: 'none',
+                  cursor: 'pointer', padding: '0',
+                  textDecoration: 'underline', textDecorationColor: 'var(--border-strong)',
+                }}
+              >
+                <Edit3 style={{ width: '11px', height: '11px' }} />
+                {isEditing ? 'Done Editing' : 'Edit Text'}
+              </button>
+            </div>
+
+            {isEditing ? (
+              <textarea
+                value={followupText}
+                onChange={(e) => setFollowupText(e.target.value)}
+                rows={6}
+                style={{
+                  width: '100%', boxSizing: 'border-box',
+                  padding: '12px 14px',
+                  background: 'var(--bg)',
+                  border: '1px solid var(--border-strong)',
+                  outline: 'none',
+                  fontSize: '12.5px', color: 'var(--text-primary)',
+                  lineHeight: '1.75', fontFamily: 'inherit',
+                  resize: 'vertical', borderRadius: '0',
+                }}
+              />
+            ) : (
+              <div style={{
+                padding: '12px 14px',
+                background: 'var(--bg)',
+                border: '1px solid var(--border)',
+                fontSize: '12.5px', color: 'var(--text-primary)',
+                lineHeight: '1.75', whiteSpace: 'pre-line', minHeight: '100px',
+                fontWeight: 400,
+              }}>
+                {followupText || preview.followupText}
+              </div>
+            )}
+          </div>
+
+          {/* Hash + Expiry */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px' }}>
+            <div style={{
+              padding: '8px 10px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border)',
+              fontSize: '10.5px', color: 'var(--text-tertiary)',
+              overflow: 'hidden',
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Payload SHA-256
+              </div>
+              <code style={{ fontFamily: 'monospace', color: 'var(--text-secondary)' }}>
+                {preview.payloadHash.substring(0, 20)}…
+              </code>
+            </div>
+            <div style={{
+              padding: '8px 10px',
+              background: 'var(--bg-subtle)',
+              border: '1px solid var(--border)',
+              fontSize: '10.5px', color: 'var(--text-tertiary)',
+              textAlign: 'right',
+            }}>
+              <div style={{ fontWeight: 600, color: 'var(--text-secondary)', marginBottom: '2px', fontSize: '10px', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+                Token Expires
+              </div>
+              <span style={{ color: 'var(--text-primary)', fontWeight: 500 }}>
+                {new Date(preview.expiresAt).toLocaleTimeString()}
+              </span>
+            </div>
+          </div>
+
+          {/* Error */}
+          {error && (
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '8px',
+              padding: '9px 12px',
+              background: 'var(--priority-critical-bg)',
+              border: '1px solid var(--priority-critical-border)',
+              fontSize: '12px', color: 'var(--priority-critical)',
+            }}>
+              <AlertTriangle style={{ width: '13px', height: '13px', flexShrink: 0 }} />
+              {error}
             </div>
           )}
         </div>
 
-        {/* Hash & Expiry Meta */}
-        <div className="grid grid-cols-2 gap-3 text-[11px] text-slate-400">
-          <div className="p-2.5 bg-slate-950/40 rounded-lg border border-slate-800/60 truncate">
-            <span className="text-slate-500">Payload SHA-256: </span>
-            <code className="text-slate-300">{preview.payloadHash.substring(0, 20)}...</code>
-          </div>
-          <div className="p-2.5 bg-slate-950/40 rounded-lg border border-slate-800/60 text-right">
-            <span className="text-slate-500">Expires: </span>
-            <span className="text-slate-300">{new Date(preview.expiresAt).toLocaleTimeString()}</span>
-          </div>
-        </div>
-
-        {error && (
-          <div className="p-3 bg-rose-950/40 border border-rose-500/40 rounded-xl text-xs text-rose-300 flex items-center gap-2">
-            <AlertTriangle className="w-4 h-4 text-rose-400" />
-            {error}
-          </div>
-        )}
-
-        {/* Actions */}
-        <div className="flex items-center justify-end space-x-3 pt-2 border-t border-slate-800">
+        {/* Footer */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '8px',
+          padding: '14px 24px',
+          borderTop: '1px solid var(--border)',
+          background: 'var(--bg-subtle)',
+        }}>
           <button
             onClick={onClose}
-            className="px-4 py-2 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-xl text-xs font-semibold transition-colors"
+            style={{
+              padding: '7px 16px',
+              background: 'var(--surface)',
+              border: '1px solid var(--border-strong)',
+              color: 'var(--text-secondary)',
+              fontSize: '12px', fontWeight: 500,
+              cursor: 'pointer', borderRadius: '0',
+              transition: 'all 0.15s',
+            }}
+            onMouseEnter={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--text-primary)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-primary)';
+            }}
+            onMouseLeave={e => {
+              (e.currentTarget as HTMLElement).style.borderColor = 'var(--border-strong)';
+              (e.currentTarget as HTMLElement).style.color = 'var(--text-secondary)';
+            }}
           >
             Don't Send
           </button>
           <button
             onClick={handleApprove}
             disabled={loading}
-            className="px-5 py-2 bg-gradient-to-r from-amber-600 to-emerald-600 hover:from-amber-500 hover:to-emerald-500 text-white rounded-xl text-xs font-bold shadow-lg shadow-amber-900/30 flex items-center gap-2 transition-all disabled:opacity-50"
+            style={{
+              display: 'flex', alignItems: 'center', gap: '6px',
+              padding: '7px 18px',
+              background: loading ? 'var(--bg-subtle)' : 'var(--text-primary)',
+              border: '1px solid transparent',
+              color: loading ? 'var(--text-tertiary)' : 'var(--surface)',
+              fontSize: '12px', fontWeight: 600,
+              cursor: loading ? 'not-allowed' : 'pointer',
+              borderRadius: '0', transition: 'all 0.15s',
+              letterSpacing: '0.01em',
+            }}
+            onMouseEnter={e => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '0.85'; }}
+            onMouseLeave={e => { if (!loading) (e.currentTarget as HTMLElement).style.opacity = '1'; }}
           >
-            <Send className="w-4 h-4" />
-            {loading ? 'Dispatching...' : 'Approve & Send to Authority'}
+            {loading
+              ? <><Loader2 style={{ width: '13px', height: '13px', animation: 'spin 1s linear infinite' }} /> Dispatching…</>
+              : <><Send style={{ width: '13px', height: '13px' }} /> Approve & Send</>
+            }
           </button>
         </div>
       </div>
+
+      <style>{`
+        @keyframes spin {
+          from { transform: rotate(0deg); }
+          to { transform: rotate(360deg); }
+        }
+      `}</style>
     </div>
   );
 };
