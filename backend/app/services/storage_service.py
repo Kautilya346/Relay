@@ -29,26 +29,42 @@ class CloudStorageService:
         content_type: str = "image/jpeg",
         filename_prefix: str = "evidence",
     ) -> str:
-        """Uploads binary image/file to GCS and returns public/signed URL."""
-        if not self.client or not self.bucket:
-            # Fallback placeholder URL if GCS bucket is not provisioned
-            unique_id = uuid.uuid4().hex[:8]
-            return f"https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&evidence_id={unique_id}"
-
-        try:
-            blob_name = f"{filename_prefix}/{datetime.now(timezone.utc).strftime('%Y/%m/%d')}/{uuid.uuid4().hex}.jpg"
-            blob = self.bucket.blob(blob_name)
-            blob.upload_from_string(file_bytes, content_type=content_type)
+        """Uploads binary image/file to GCS and returns a signed URL (7-day) or base64 data URL fallback."""
+        if self.client and self.bucket:
             try:
-                url = blob.public_url
-                return url
-            except Exception:
-                signed_url = blob.generate_signed_url(expiration=timedelta(days=7))
-                return signed_url
-        except Exception as e:
-            logger.warning(f"GCS bucket upload failed ({e}). Returning fallback evidence reference.")
-            unique_id = uuid.uuid4().hex[:8]
-            return f"https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600&evidence_id={unique_id}"
+                blob_name = f"{filename_prefix}/{datetime.now(timezone.utc).strftime('%Y/%m/%d')}/{uuid.uuid4().hex}.jpg"
+                blob = self.bucket.blob(blob_name)
+                blob.upload_from_string(file_bytes, content_type=content_type)
+
+                # Try signed URL first (works even with uniform bucket-level access)
+                try:
+                    signed_url = blob.generate_signed_url(
+                        expiration=timedelta(days=7),
+                        method="GET",
+                        version="v4",
+                    )
+                    if signed_url:
+                        logger.info(f"GCS signed URL generated for {blob_name}")
+                        return signed_url
+                except Exception as sign_err:
+                    logger.warning(f"Signed URL generation failed ({sign_err}), trying public URL...")
+
+                # Fallback: try making public (requires bucket IAM allUsers storage.objectViewer)
+                try:
+                    blob.make_public()
+                    if blob.public_url:
+                        return blob.public_url
+                except Exception:
+                    pass
+
+            except Exception as e:
+                logger.warning(f"GCS upload failed ({e}). Falling back to base64 data URL.")
+
+        import base64
+        encoded = base64.b64encode(file_bytes).decode("utf-8")
+        return f"data:{content_type};base64,{encoded}"
+
+
 
 
 

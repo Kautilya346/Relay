@@ -181,8 +181,33 @@ export const IncidentDetailModal: React.FC<IncidentDetailModalProps> = ({
                     </div>
                   </div>
                   {cmp.imageUrls && cmp.imageUrls[0] && (
-                    <img src={cmp.imageUrls[0]} alt="Evidence" style={{ width: '44px', height: '36px', objectFit: 'cover', border: '1px solid var(--border)', flexShrink: 0 }} />
+                    <a
+                      href={cmp.imageUrls[0]}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ flexShrink: 0 }}
+                      title="Click to view full evidence photo"
+                    >
+                      <img
+                        src={cmp.imageUrls[0]}
+                        alt="Uploaded Evidence"
+                        style={{
+                          width: '72px',
+                          height: '52px',
+                          objectFit: 'cover',
+                          border: '1px solid #cbd5e1',
+                          borderRadius: '6px',
+                          boxShadow: '0 1px 4px rgba(0,0,0,0.12)',
+                          cursor: 'pointer',
+                        }}
+                        onError={(e) => {
+                          (e.target as HTMLImageElement).src =
+                            'https://images.unsplash.com/photo-1515162816999-a0c47dc192f7?w=600';
+                        }}
+                      />
+                    </a>
                   )}
+
                 </div>
               ))}
             </div>

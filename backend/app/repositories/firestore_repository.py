@@ -260,30 +260,60 @@ class FirestoreRepository:
     # --- Browser Sessions ---
     def save_browser_session(self, session: BrowserSessionModel) -> BrowserSessionModel:
         if self.client:
-            self.client.collection("browser_sessions").document(session.sessionId).set(session.model_dump())
+            try:
+                import json
+                data = json.loads(session.model_dump_json())
+                self.client.collection("browser_sessions").document(session.sessionId).set(data)
+            except Exception as e:
+                import logging
+                logging.getLogger("jansahayak.firestore").warning(f"Firestore save_browser_session note: {e}")
         return session
 
     def get_browser_session(self, session_id: str) -> Optional[BrowserSessionModel]:
         if not self.client:
             return None
-        doc = self.client.collection("browser_sessions").document(session_id).get()
-        if doc.exists:
-            return BrowserSessionModel(**doc.to_dict())
+        try:
+            doc = self.client.collection("browser_sessions").document(session_id).get()
+            if doc.exists:
+                return BrowserSessionModel(**doc.to_dict())
+        except Exception:
+            pass
         return None
 
     # --- Audit Event Log ---
     def log_audit_event(self, event: AuditEventModel):
         if self.client:
-            self.client.collection("events").document(event.id).set(event.model_dump())
+            try:
+                import json
+                data = json.loads(event.model_dump_json())
+                self.client.collection("events").document(event.id).set(data)
+            except Exception as e:
+                import logging
+                logging.getLogger("jansahayak.firestore").warning(f"Firestore log_audit_event note: {e}")
+
 
     def get_timeline_for_incident(self, incident_id: str) -> List[AuditEventModel]:
         if not self.client:
             return []
         try:
             docs = self.client.collection("events").where("entityId", "==", incident_id).stream()
-            return [AuditEventModel(**d.to_dict()) for d in docs]
+            events = [AuditEventModel(**d.to_dict()) for d in docs]
+            events.sort(key=lambda x: x.timestamp, reverse=True)
+            return events
         except Exception:
             return []
+
+    def list_audit_events(self) -> List[AuditEventModel]:
+        if not self.client:
+            return []
+        try:
+            docs = self.client.collection("events").stream()
+            events = [AuditEventModel(**d.to_dict()) for d in docs]
+            events.sort(key=lambda x: x.timestamp, reverse=True)
+            return events
+        except Exception:
+            return []
+
 
     # --- Policy Config ---
     def get_policy_config(self) -> EscalationPolicyConfig:
