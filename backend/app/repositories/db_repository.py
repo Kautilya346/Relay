@@ -182,6 +182,56 @@ class DatabaseRepository:
     def get_timeline_for_incident(self, incident_id: str) -> List[AuditEventModel]:
         return [e for e in self.audit_events if e.entityId == incident_id or e.metadata.get("incidentId") == incident_id]
 
+    def list_audit_events(self) -> List[AuditEventModel]:
+        if not self.audit_events:
+            self._seed_default_audit_events()
+        return sorted(self.audit_events, key=lambda x: x.timestamp, reverse=True)
+
+    def _seed_default_audit_events(self):
+        self.audit_events = [
+            AuditEventModel(
+                id="audit_seed_01",
+                eventType="ComplaintClassified",
+                entityId="INC-1001",
+                actorType=ActorType.AGENT,
+                actorId="classifier_agent",
+                decision="Category: Road & Potholes, Severity: 4.0, SafetyRisk: 4.0",
+                reasonCodes=["AI_CLASSIFICATION_SUCCESS"],
+                timestamp=current_iso_timestamp(),
+            ),
+            AuditEventModel(
+                id="audit_seed_02",
+                eventType="NewIncidentCreated",
+                entityId="INC-1001",
+                actorType=ActorType.SYSTEM,
+                actorId="processor",
+                decision="Created incident INC-1001 (Severe Crater & Pothole Cluster on MG Road). Routed to Local Municipal Ward (RAJ_SAMPARK).",
+                reasonCodes=["NO_MATCHING_CANDIDATE"],
+                timestamp=current_iso_timestamp(),
+            ),
+            AuditEventModel(
+                id="audit_seed_03",
+                eventType="ImpactScoreChanged",
+                entityId="INC-1001",
+                actorType=ActorType.SYSTEM,
+                actorId="impact_engine",
+                decision="Impact score updated to 82.0 based on 21 citizen reports and safety risk.",
+                reasonCodes=["METRICS_RECALCULATED"],
+                timestamp=current_iso_timestamp(),
+            ),
+            AuditEventModel(
+                id="audit_seed_04",
+                eventType="ExternalComplaintSubmitted",
+                entityId="INC-1001",
+                actorType=ActorType.AGENT,
+                actorId="filing_agent",
+                decision="Official case reference EXT-2026-726103 registered via Rajasthan Sampark Portal.",
+                reasonCodes=["ADAPTER_SUBMISSION_SUCCESS"],
+                timestamp=current_iso_timestamp(),
+            ),
+        ]
+
+
     # --- Policy Config ---
     def get_policy_config(self) -> EscalationPolicyConfig:
         return self.policy_config

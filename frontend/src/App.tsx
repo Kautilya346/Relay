@@ -16,7 +16,9 @@ import type { Incident, Complaint, AuditEvent, EscalationPolicyConfig, FollowupP
 import {
   fetchNearbyIncidents,
   previewFollowup,
+  fetchAllAuditEvents,
 } from './services/api';
+
 
 // Initial fallback mock incidents for demo
 const INITIAL_MOCK_INCIDENTS: Incident[] = [
@@ -127,17 +129,25 @@ export function App() {
 
   const loadBackendData = async () => {
     try {
-      const data = await fetchNearbyIncidents();
-      if (data && data.length > 0) {
-        setIncidents(data);
+      const data = await fetchNearbyIncidents(12.9716, 77.5946, 50000);
+      if (data !== null && Array.isArray(data)) {
         setIsBackendConnected(true);
+        if (data.length > 0) {
+          setIncidents(data);
+        }
       } else {
         setIsBackendConnected(false);
+      }
+      const auditEvts = await fetchAllAuditEvents();
+      if (auditEvts && auditEvts.length > 0) {
+        setEvents(auditEvts);
       }
     } catch {
       setIsBackendConnected(false);
     }
   };
+
+
 
   useEffect(() => {
     loadBackendData();

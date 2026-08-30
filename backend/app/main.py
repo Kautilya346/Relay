@@ -6,6 +6,7 @@ backend_dir = Path(__file__).resolve().parent.parent
 if str(backend_dir) not in sys.path:
     sys.path.insert(0, str(backend_dir))
 
+
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.core.config import settings
@@ -18,13 +19,25 @@ app = FastAPI(
 )
 
 # Enable CORS for configured origins
+origins = [
+    "http://localhost:5173",
+    "http://localhost:3000",
+    "http://127.0.0.1:5173",
+    "http://127.0.0.1:3000",
+]
+if settings.CORS_ORIGINS:
+    for o in settings.CORS_ORIGINS:
+        if o and o not in origins:
+            origins.append(o)
+
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=settings.CORS_ORIGINS or ["*"],
+    allow_origins=origins,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 # Register Router Modules
 app.include_router(complaints.router)
@@ -54,4 +67,5 @@ async def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=True)
+    # loop="asyncio" forces SelectorEventLoop on Windows (required by Playwright)
+    uvicorn.run("app.main:app", host=settings.HOST, port=settings.PORT, reload=True, loop="asyncio")

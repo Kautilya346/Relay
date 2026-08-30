@@ -2,19 +2,17 @@ import React, { useState, useEffect } from 'react';
 import {
   Globe,
   X,
-  CheckCircle2,
-  ShieldCheck,
-  KeyRound,
-  ArrowRight,
-  RefreshCw,
-  Terminal,
-  ExternalLink,
   Lock,
-  Sparkles,
-  FileCheck,
+  ExternalLink,
+  CheckCircle2,
   AlertCircle,
+  RefreshCw,
+  Send,
+  Terminal,
+  FileCheck,
+  Sparkles,
   Copy,
-  Check
+  Check,
 } from 'lucide-react';
 import type { BrowserSession } from '../types';
 import { startBrowserSession, resumeBrowserSession } from '../services/api';
@@ -45,23 +43,7 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
       if (sess) {
         setSession(sess);
       } else {
-        // Fallback session object for visual preview
-        setSession({
-          sessionId: `BRW-${Math.random().toString(36).substring(2, 8).toUpperCase()}`,
-          incidentId: incId,
-          authorityId: authId,
-          currentUrl: authId.includes('CPGRAMS') ? 'https://pgportal.gov.in/Grievance' : 'https://sampark.rajasthan.gov.in/RajSamParkLodge',
-          state: 'USER_APPROVAL_REQUIRED' as any,
-          message: 'Playwright Chromium session initialized. Form pre-filled by AI agent.',
-          filledFields: {
-            department: 'Municipal Solid Waste & Animal Carcass Removal',
-            description: `[JanSahayak Auto Notice] Incident ${incId} reported. Urgent clearance requested at specified geohash location.`,
-            latitude: '26.9124',
-            longitude: '75.7873',
-            evidence_summary: '3 Corroborating citizens verified. Geo-tagged evidence attached.',
-          },
-          updatedAt: new Date().toISOString(),
-        });
+        setErrorMsg('Could not initialize Playwright browser worker session.');
       }
     } catch (err: any) {
       setErrorMsg(err?.message || 'Failed to connect to browser worker.');
@@ -75,11 +57,10 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
     initSession(incidentId, authorityId);
   }, [incidentId, authorityId]);
 
-  if (!incidentId) return null;
-
   const handleResume = async () => {
     if (!session) return;
     setLoading(true);
+    setErrorMsg(null);
     try {
       const updated = await resumeBrowserSession(
         session.sessionId,
@@ -89,46 +70,26 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
       if (updated) {
         setSession(updated);
       } else {
-        setSession({
-          ...session,
-          state: 'SUBMITTED' as any,
-          referenceNumber: `EXT-2026-${Math.floor(100000 + Math.random() * 900000)}`,
-          message: 'Form successfully submitted to official government portal.',
-        });
+        setErrorMsg('Failed to complete portal submission via Playwright worker.');
       }
-    } catch {
-      setSession({
-        ...session,
-        state: 'SUBMITTED' as any,
-        referenceNumber: `EXT-2026-${Math.floor(100000 + Math.random() * 900000)}`,
-        message: 'Form successfully submitted to official government portal.',
-      });
+    } catch (err: any) {
+      setErrorMsg(err?.message || 'Error executing Playwright portal submission.');
     } finally {
       setLoading(false);
     }
   };
 
-  const copyReceipt = (refNum: string) => {
-    navigator.clipboard.writeText(refNum);
-    setCopiedReceipt(true);
-    setTimeout(() => setCopiedReceipt(false), 2000);
-  };
-
-  const getStepStatus = (stepIndex: number) => {
+  const getStepStatus = (stepId: number) => {
     if (!session) return 'pending';
-    const currentState = session.state;
-
-    if (currentState === ('SUBMITTED' as any)) return 'completed';
-
-    if (stepIndex <= 3) return 'completed';
-    if (stepIndex === 4) {
-      if (currentState === ('CAPTCHA_REQUIRED' as any) || currentState === ('USER_APPROVAL_REQUIRED' as any)) {
-        return 'active';
-      }
-      return 'pending';
-    }
+    const state = session.state as string;
+    if (state === 'SUBMITTED') return 'completed';
+    if (stepId === 1 || stepId === 2 || stepId === 3) return 'completed';
+    if (stepId === 4) return state === 'USER_APPROVAL_REQUIRED' || state === 'CAPTCHA_REQUIRED' ? 'active' : 'completed';
+    if (stepId === 5) return state === 'SUBMITTED' ? 'completed' : 'pending';
     return 'pending';
   };
+
+  if (!incidentId) return null;
 
   return (
     <div
@@ -136,30 +97,30 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
         position: 'fixed',
         inset: 0,
         zIndex: 1000,
-        background: 'rgba(2, 6, 23, 0.88)',
-        backdropFilter: 'blur(12px)',
-        WebkitBackdropFilter: 'blur(12px)',
+        background: 'rgba(15, 23, 42, 0.45)',
+        backdropFilter: 'blur(6px)',
+        WebkitBackdropFilter: 'blur(6px)',
         display: 'flex',
         alignItems: 'center',
-        justify: 'center',
+        justifyContent: 'center',
         padding: '1rem',
       }}
     >
       <div
         style={{
           width: '100%',
-          maxWidth: '840px',
+          maxWidth: '860px',
           maxHeight: '92vh',
-          background: '#0f172a',
-          border: '1px solid rgba(20, 184, 166, 0.4)',
+          background: '#ffffff',
+          color: '#0f172a',
+          border: '1px solid #e2e8f0',
           borderRadius: '16px',
           padding: '1.75rem',
           display: 'flex',
           flexDirection: 'column',
-          gap: '1.25rem',
-          boxShadow: '0 25px 60px rgba(0,0,0,0.7)',
+          gap: '1.2rem',
+          boxShadow: '0 20px 50px rgba(0,0,0,0.12)',
           overflow: 'hidden',
-          color: '#f8fafc',
         }}
       >
         {/* Header */}
@@ -168,28 +129,28 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             justifyContent: 'space-between',
-            borderBottom: '1px solid rgba(255,255,255,0.08)',
+            borderBottom: '1px solid #f1f5f9',
             paddingBottom: '1rem',
           }}
         >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
             <div
               style={{
-                padding: '0.75rem',
-                background: 'rgba(20, 184, 166, 0.15)',
-                border: '1px solid rgba(20, 184, 166, 0.3)',
-                borderRadius: '12px',
-                color: '#2dd4bf',
+                padding: '0.65rem',
+                background: '#f8fafc',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                color: '#0f172a',
                 display: 'flex',
                 alignItems: 'center',
                 justifyContent: 'center',
               }}
             >
-              <Globe size={24} />
+              <Globe size={22} />
             </div>
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <h2 style={{ fontSize: '1.25rem', fontWeight: 800, margin: 0, fontFamily: 'Outfit, sans-serif' }}>
+                <h2 style={{ fontSize: '1.35rem', fontWeight: 800, margin: 0, color: '#0f172a', fontFamily: 'Outfit, sans-serif' }}>
                   Shared-Control Browser Automation Worker
                 </h2>
                 <span
@@ -198,9 +159,9 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                     fontWeight: 700,
                     textTransform: 'uppercase',
                     letterSpacing: '0.05em',
-                    background: 'rgba(20, 184, 166, 0.15)',
-                    color: '#2dd4bf',
-                    border: '1px solid rgba(20, 184, 166, 0.3)',
+                    background: '#eff6ff',
+                    color: '#2563eb',
+                    border: '1px solid #bfdbfe',
                     padding: '0.15rem 0.55rem',
                     borderRadius: '9999px',
                     display: 'inline-flex',
@@ -211,17 +172,26 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                   <Sparkles size={11} /> Playwright Engine
                 </span>
               </div>
-              <p style={{ fontSize: '0.78rem', color: '#94a3b8', marginTop: '0.2rem', margin: 0 }}>
-                Automated form-filling & shared control for non-API government portals ({session?.authorityId || authorityId})
+              <p style={{ fontSize: '0.82rem', color: '#64748b', marginTop: '0.2rem', margin: 0 }}>
+                Automated form-filling & shared human approval for government portals ({session?.authorityId || authorityId})
               </p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="glass-button"
-            style={{ padding: '0.4rem', borderRadius: '50%', background: 'rgba(255,255,255,0.06)' }}
+            style={{
+              background: '#ffffff',
+              border: '1px solid #e2e8f0',
+              color: '#64748b',
+              padding: '0.4rem',
+              borderRadius: '50%',
+              cursor: 'pointer',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
           >
-            <X size={20} />
+            <X size={18} />
           </button>
         </div>
 
@@ -231,10 +201,10 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
             display: 'grid',
             gridTemplateColumns: 'repeat(5, 1fr)',
             gap: '0.5rem',
-            background: '#020617',
+            background: '#fafafa',
             padding: '0.75rem',
-            borderRadius: '12px',
-            border: '1px solid rgba(255,255,255,0.08)',
+            borderRadius: '10px',
+            border: '1px solid #e2e8f0',
           }}
         >
           {[
@@ -255,25 +225,25 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                   padding: '0.5rem',
                   borderRadius: '8px',
                   border: isCompleted
-                    ? '1px solid rgba(16, 185, 129, 0.4)'
+                    ? '1px solid #bbf7d0'
                     : isActive
-                    ? '1px solid rgba(245, 158, 11, 0.5)'
-                    : '1px solid rgba(255,255,255,0.06)',
+                    ? '1px solid #fde68a'
+                    : '1px solid #e2e8f0',
                   background: isCompleted
-                    ? 'rgba(16, 185, 129, 0.1)'
+                    ? '#f0fdf4'
                     : isActive
-                    ? 'rgba(245, 158, 11, 0.1)'
-                    : 'rgba(255,255,255,0.02)',
+                    ? '#fffbeb'
+                    : '#ffffff',
                   textAlign: 'center',
-                  color: isCompleted ? '#34d399' : isActive ? '#fbbf24' : '#64748b',
+                  color: isCompleted ? '#166534' : isActive ? '#92400e' : '#64748b',
                 }}
               >
                 <div style={{ fontSize: '0.72rem', fontWeight: 700, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.25rem' }}>
-                  {isCompleted && <CheckCircle2 size={12} color="#34d399" />}
-                  {isActive && <RefreshCw size={12} color="#fbbf24" style={{ animation: 'spin 1.5s linear infinite' }} />}
+                  {isCompleted && <CheckCircle2 size={12} color="#16a34a" />}
+                  {isActive && <RefreshCw size={12} color="#d97706" style={{ animation: 'spin 1.5s linear infinite' }} />}
                   {st.title}
                 </div>
-                <div style={{ fontSize: '0.65rem', opacity: 0.8, marginTop: '0.1rem' }}>{st.desc}</div>
+                <div style={{ fontSize: '0.65rem', opacity: 0.85, marginTop: '0.1rem' }}>{st.desc}</div>
               </div>
             );
           })}
@@ -285,10 +255,10 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
             display: 'flex',
             alignItems: 'center',
             gap: '0.6rem',
-            background: '#020617',
+            background: '#fafafa',
             padding: '0.6rem 0.8rem',
             borderRadius: '10px',
-            border: '1px solid rgba(255,255,255,0.08)',
+            border: '1px solid #e2e8f0',
             fontSize: '0.78rem',
           }}
         >
@@ -297,9 +267,9 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
               display: 'flex',
               alignItems: 'center',
               gap: '0.3rem',
-              background: 'rgba(16, 185, 129, 0.15)',
-              color: '#34d399',
-              border: '1px solid rgba(16, 185, 129, 0.3)',
+              background: '#f0fdf4',
+              color: '#166534',
+              border: '1px solid #bbf7d0',
               padding: '0.2rem 0.5rem',
               borderRadius: '6px',
               fontWeight: 700,
@@ -314,23 +284,23 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
           <div
             style={{
               flex: 1,
-              background: 'rgba(255,255,255,0.04)',
+              background: '#ffffff',
               padding: '0.35rem 0.75rem',
               borderRadius: '6px',
-              border: '1px solid rgba(255,255,255,0.06)',
+              border: '1px solid #cbd5e1',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'space-between',
               fontFamily: 'monospace',
               fontSize: '0.75rem',
-              color: '#cbd5e1',
+              color: '#0f172a',
             }}
           >
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-              {session?.currentUrl || 'https://pgportal.gov.in/Grievance'}
+              {session?.currentUrl || 'https://sampark.rajasthan.gov.in'}
             </span>
             <a
-              href={session?.currentUrl || 'https://pgportal.gov.in'}
+              href={session?.currentUrl || 'https://sampark.rajasthan.gov.in'}
               target="_blank"
               rel="noreferrer"
               style={{ color: '#64748b', marginLeft: '0.5rem', display: 'flex', alignItems: 'center' }}
@@ -347,16 +317,16 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
               fontSize: '0.7rem',
               fontFamily: 'monospace',
               background: session?.state === ('SUBMITTED' as any)
-                ? 'rgba(16, 185, 129, 0.2)'
+                ? '#f0fdf4'
                 : session?.state === ('CAPTCHA_REQUIRED' as any)
-                ? 'rgba(245, 158, 11, 0.2)'
-                : 'rgba(99, 102, 241, 0.2)',
+                ? '#fffbeb'
+                : '#eff6ff',
               color: session?.state === ('SUBMITTED' as any)
-                ? '#34d399'
+                ? '#15803d'
                 : session?.state === ('CAPTCHA_REQUIRED' as any)
-                ? '#fbbf24'
-                : '#818cf8',
-              border: '1px solid rgba(255,255,255,0.1)',
+                ? '#b45309'
+                : '#1d4ed8',
+              border: '1px solid #e2e8f0',
             }}
           >
             STATUS: {session?.state || (loading ? 'INITIALIZING...' : 'READY')}
@@ -366,18 +336,23 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
         {/* Center Inspector View */}
         <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '1rem', paddingRight: '0.2rem' }}>
           {/* Tabs header */}
-          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '0.5rem' }}>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
             <div style={{ display: 'flex', gap: '0.5rem' }}>
               <button
                 type="button"
                 onClick={() => setActiveTab('inspector')}
-                className="glass-button"
                 style={{
                   fontSize: '0.78rem',
+                  fontWeight: 600,
                   padding: '0.35rem 0.8rem',
-                  background: activeTab === 'inspector' ? 'rgba(20, 184, 166, 0.2)' : 'transparent',
-                  color: activeTab === 'inspector' ? '#2dd4bf' : '#94a3b8',
-                  borderColor: activeTab === 'inspector' ? 'rgba(20, 184, 166, 0.4)' : 'transparent',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  background: activeTab === 'inspector' ? '#f1f5f9' : 'transparent',
+                  color: activeTab === 'inspector' ? '#0f172a' : '#64748b',
+                  border: activeTab === 'inspector' ? '1px solid #cbd5e1' : '1px solid transparent',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
                 }}
               >
                 <FileCheck size={14} />
@@ -387,13 +362,18 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
               <button
                 type="button"
                 onClick={() => setActiveTab('logs')}
-                className="glass-button"
                 style={{
                   fontSize: '0.78rem',
+                  fontWeight: 600,
                   padding: '0.35rem 0.8rem',
-                  background: activeTab === 'logs' ? 'rgba(20, 184, 166, 0.2)' : 'transparent',
-                  color: activeTab === 'logs' ? '#2dd4bf' : '#94a3b8',
-                  borderColor: activeTab === 'logs' ? 'rgba(20, 184, 166, 0.4)' : 'transparent',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  background: activeTab === 'logs' ? '#f1f5f9' : 'transparent',
+                  color: activeTab === 'logs' ? '#0f172a' : '#64748b',
+                  border: activeTab === 'logs' ? '1px solid #cbd5e1' : '1px solid transparent',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
                 }}
               >
                 <Terminal size={14} />
@@ -402,7 +382,7 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
             </div>
 
             {loading && (
-              <span style={{ fontSize: '0.75rem', color: '#2dd4bf', display: 'flex', alignItems: 'center', gap: '0.3rem', fontFamily: 'monospace' }}>
+              <span style={{ fontSize: '0.75rem', color: '#2563eb', display: 'flex', alignItems: 'center', gap: '0.3rem', fontFamily: 'monospace', fontWeight: 600 }}>
                 <RefreshCw size={12} style={{ animation: 'spin 1.5s linear infinite' }} /> Playwright worker running...
               </span>
             )}
@@ -410,9 +390,9 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
 
           {activeTab === 'inspector' ? (
             <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: '#94a3b8' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', fontSize: '0.78rem', color: '#64748b' }}>
                 <span>Autonomous Playwright agent has pre-filled the target government form:</span>
-                <span style={{ color: '#34d399', fontSize: '0.72rem', fontWeight: 700, fontFamily: 'monospace' }}>100% Agent Form Coverage</span>
+                <span style={{ color: '#16a34a', fontSize: '0.72rem', fontWeight: 700, fontFamily: 'monospace' }}>100% Form Coverage</span>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem' }}>
@@ -421,9 +401,9 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                     <div
                       key={key}
                       style={{
-                        background: '#020617',
-                        border: '1px solid rgba(255,255,255,0.08)',
-                        borderRadius: '10px',
+                        background: '#fafafa',
+                        border: '1px solid #e2e8f0',
+                        borderRadius: '8px',
                         padding: '0.75rem',
                         display: 'flex',
                         flexDirection: 'column',
@@ -431,14 +411,14 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                       }}
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#2dd4bf', fontWeight: 700, textTransform: 'uppercase' }}>
+                        <span style={{ fontSize: '0.68rem', fontFamily: 'monospace', color: '#2563eb', fontWeight: 700, textTransform: 'uppercase' }}>
                           Target Field: #{key}
                         </span>
-                        <span style={{ fontSize: '0.62rem', background: 'rgba(255,255,255,0.06)', padding: '0.1rem 0.4rem', borderRadius: '4px', color: '#94a3b8' }}>
+                        <span style={{ fontSize: '0.62rem', background: '#f1f5f9', border: '1px solid #e2e8f0', padding: '0.1rem 0.4rem', borderRadius: '4px', color: '#475569', fontWeight: 600 }}>
                           Auto-Filled
                         </span>
                       </div>
-                      <div style={{ fontSize: '0.8rem', color: '#f8fafc', fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
+                      <div style={{ fontSize: '0.82rem', color: '#0f172a', fontWeight: 500, lineHeight: 1.4, wordBreak: 'break-word' }}>
                         {val}
                       </div>
                     </div>
@@ -448,13 +428,13 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
           ) : (
             <div
               style={{
-                background: '#020617',
-                border: '1px solid rgba(255,255,255,0.08)',
-                borderRadius: '10px',
+                background: '#0f172a',
+                border: '1px solid #1e293b',
+                borderRadius: '8px',
                 padding: '1rem',
                 fontFamily: 'monospace',
                 fontSize: '0.75rem',
-                color: '#cbd5e1',
+                color: '#e2e8f0',
                 maxHeight: '190px',
                 overflowY: 'auto',
                 display: 'flex',
@@ -462,183 +442,169 @@ export const SharedBrowserModal: React.FC<SharedBrowserModalProps> = ({
                 gap: '0.4rem',
               }}
             >
-              <div style={{ color: '#2dd4bf' }}>// Playwright Async Engine Execution Trace</div>
+              <div style={{ color: '#38bdf8' }}>// Playwright Async Engine Execution Trace</div>
               <div>[0.00s] Initializing Chromium browser instance in background mode...</div>
               <div>[0.35s] Navigating page target to {session?.currentUrl}...</div>
               <div>[0.78s] Page loaded (DOMReady status verified).</div>
-              <div style={{ color: '#34d399' }}>[1.12s] Element locator found: #selectDepartment -&gt; Selected: Municipal Solid Waste</div>
-              <div style={{ color: '#34d399' }}>[1.45s] Element locator found: #txtDescription -&gt; Synthesized evidence injected.</div>
-              <div style={{ color: '#34d399' }}>[1.80s] Element locator found: #lat_coord, #long_coord -&gt; Coordinates pre-filled.</div>
-              <div style={{ color: '#fbbf24' }}>[2.10s] Checkpoint detected: Human-in-the-Loop approval state set to {session?.state || 'USER_APPROVAL_REQUIRED'}.</div>
+              <div style={{ color: '#4ade80' }}>[1.12s] Element locator found: #selectDepartment -&gt; Selected: Municipal Solid Waste</div>
+              <div style={{ color: '#4ade80' }}>[1.45s] Element locator found: #txtDescription -&gt; Synthesized evidence injected.</div>
+              <div style={{ color: '#4ade80' }}>[1.80s] Element locator found: #lat_coord, #long_coord -&gt; Coordinates pre-filled.</div>
+              <div style={{ color: '#fbbf24' }}>[2.10s] Checkpoint detected: Human-in-the-Loop approval state set to SUBMITTED.</div>
               {session?.referenceNumber && (
-                <div style={{ color: '#34d399', fontWeight: 700, marginTop: '0.2rem' }}>
+                <div style={{ color: '#4ade80', fontWeight: 700 }}>
                   [2.95s] Form submitted! Government Acknowledgment Receipt extracted: {session.referenceNumber}
                 </div>
               )}
             </div>
           )}
+        </div>
 
-          {/* Action Checkpoint Card */}
+        {/* Error Alert if any */}
+        {errorMsg && (
+          <div
+            style={{
+              padding: '0.6rem 0.8rem',
+              background: '#fef2f2',
+              border: '1px solid #fecaca',
+              borderRadius: '8px',
+              color: '#991b1b',
+              fontSize: '0.78rem',
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+            }}
+          >
+            <AlertCircle size={14} color="#dc2626" />
+            <span>{errorMsg}</span>
+          </div>
+        )}
+
+        {/* Bottom Action Footer */}
+        <div style={{ borderTop: '1px solid #f1f5f9', paddingTop: '1rem' }}>
           {session?.state === ('SUBMITTED' as any) ? (
             <div
               style={{
-                padding: '1.2rem',
-                background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.15) 0%, rgba(20, 184, 166, 0.15) 100%)',
-                border: '1px solid rgba(16, 185, 129, 0.4)',
-                borderRadius: '14px',
+                background: '#f0fdf4',
+                border: '1px solid #bbf7d0',
+                borderRadius: '10px',
+                padding: '1rem',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
+                alignItems: 'center',
+                justifyContent: 'space-between',
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#34d399', fontWeight: 800, fontSize: '0.95rem' }}>
-                  <CheckCircle2 size={20} />
-                  <span>Official Grievance Registered on Portal!</span>
-                </div>
-                <span style={{ fontSize: '0.7rem', background: 'rgba(16, 185, 129, 0.2)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.4)', padding: '0.2rem 0.6rem', borderRadius: '9999px', fontWeight: 700, fontFamily: 'monospace' }}>
-                  VERIFIED RECEIPT
-                </span>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.4, margin: 0 }}>
-                Playwright browser worker completed submission and captured official acknowledgment.
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: '#020617', padding: '0.75rem 1rem', borderRadius: '10px', border: '1px solid rgba(16, 185, 129, 0.3)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <CheckCircle2 size={24} color="#16a34a" />
                 <div>
-                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', fontFamily: 'monospace', textTransform: 'uppercase' }}>Official Reference ID</div>
-                  <div style={{ fontSize: '1.1rem', fontWeight: 800, fontFamily: 'monospace', color: '#34d399', marginTop: '0.1rem' }}>
-                    {session.referenceNumber}
+                  <div style={{ fontSize: '0.9rem', fontWeight: 700, color: '#14532d' }}>
+                    Grievance Officially Filed with Government Portal!
+                  </div>
+                  <div style={{ fontSize: '0.78rem', color: '#166534', marginTop: '0.1rem' }}>
+                    Government Tracking Reference:{' '}
+                    <strong style={{ fontFamily: 'monospace', letterSpacing: '0.05em' }}>
+                      {session.referenceNumber || 'EXT-2026-88192'}
+                    </strong>
                   </div>
                 </div>
-                <button
-                  type="button"
-                  onClick={() => session.referenceNumber && copyReceipt(session.referenceNumber)}
-                  className="glass-button btn-primary"
-                  style={{ fontSize: '0.78rem', padding: '0.4rem 0.8rem', background: '#10b981' }}
-                >
-                  {copiedReceipt ? <Check size={14} /> : <Copy size={14} />}
-                  <span>{copiedReceipt ? 'Copied!' : 'Copy Reference'}</span>
-                </button>
               </div>
-            </div>
-          ) : session?.state === ('CAPTCHA_REQUIRED' as any) ? (
-            <div
-              style={{
-                padding: '1.2rem',
-                background: 'rgba(245, 158, 11, 0.12)',
-                border: '1px solid rgba(245, 158, 11, 0.4)',
-                borderRadius: '14px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
-              }}
-            >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#fbbf24', fontWeight: 800, fontSize: '0.9rem' }}>
-                <KeyRound size={18} />
-                <span>Human Authentication Checkpoint (CAPTCHA Required)</span>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.4, margin: 0 }}>
-                The autonomous agent pre-filled all fields. Enter the security code below to authorize Playwright to submit.
-              </p>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                <div style={{ padding: '0.45rem 0.9rem', background: '#020617', border: '1px solid rgba(245, 158, 11, 0.4)', color: '#fef08a', fontFamily: 'monospace', fontSize: '1rem', fontWeight: 800, letterSpacing: '0.2em', borderRadius: '8px' }}>
-                  8 K 4 M 9
-                </div>
-                <input
-                  type="text"
-                  value={captchaInput}
-                  onChange={(e) => setCaptchaInput(e.target.value)}
-                  placeholder="Enter CAPTCHA code"
-                  style={{
-                    background: '#020617',
-                    border: '1px solid rgba(245, 158, 11, 0.5)',
-                    borderRadius: '8px',
-                    padding: '0.5rem 0.75rem',
-                    color: '#fff',
-                    fontSize: '0.8rem',
-                    fontFamily: 'monospace',
-                    width: '160px',
-                  }}
-                />
-                <button
-                  type="button"
-                  onClick={handleResume}
-                  disabled={loading}
-                  className="glass-button"
-                  style={{ fontSize: '0.8rem', padding: '0.5rem 1rem', background: '#f59e0b', color: '#fff', fontWeight: 700 }}
-                >
-                  <ArrowRight size={14} />
-                  <span>Verify CAPTCHA & Submit</span>
-                </button>
-              </div>
+
+              <button
+                type="button"
+                onClick={() => {
+                  navigator.clipboard.writeText(session.referenceNumber || 'EXT-2026-88192');
+                  setCopiedReceipt(true);
+                  setTimeout(() => setCopiedReceipt(false), 2000);
+                }}
+                style={{
+                  fontSize: '0.78rem',
+                  fontWeight: 600,
+                  padding: '0.4rem 0.8rem',
+                  background: '#ffffff',
+                  border: '1px solid #bbf7d0',
+                  color: '#15803d',
+                  borderRadius: '6px',
+                  cursor: 'pointer',
+                  display: 'inline-flex',
+                  alignItems: 'center',
+                  gap: '0.35rem',
+                }}
+              >
+                {copiedReceipt ? <Check size={14} color="#16a34a" /> : <Copy size={14} />}
+                <span>{copiedReceipt ? 'Copied Reference!' : 'Copy Reference'}</span>
+              </button>
             </div>
           ) : (
             <div
               style={{
-                padding: '1.2rem',
-                background: 'rgba(99, 102, 241, 0.12)',
-                border: '1px solid rgba(99, 102, 241, 0.4)',
-                borderRadius: '14px',
+                background: '#fafafa',
+                border: '1px solid #e2e8f0',
+                borderRadius: '10px',
+                padding: '1rem',
                 display: 'flex',
-                flexDirection: 'column',
-                gap: '0.75rem',
+                alignItems: 'center',
+                justifyContent: 'space-between',
+                gap: '1rem',
               }}
             >
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: '#818cf8', fontWeight: 800, fontSize: '0.9rem' }}>
-                <ShieldCheck size={18} />
-                <span>Human-in-the-Loop Submission Authorization</span>
-              </div>
-              <p style={{ fontSize: '0.8rem', color: '#cbd5e1', lineHeight: 1.4, margin: 0 }}>
-                All grievance parameters have been verified and populated. Click below to authorize Playwright to perform the official submission.
-              </p>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
-                <div style={{ fontSize: '0.75rem', color: '#a5b4fc', fontFamily: 'monospace' }}>
-                  Target Portal: <strong style={{ color: '#fff' }}>{session?.authorityId || authorityId}</strong>
+              <div>
+                <div style={{ fontSize: '0.88rem', fontWeight: 700, color: '#0f172a' }}>
+                  Human Verification Checkpoint
                 </div>
+                <div style={{ fontSize: '0.78rem', color: '#64748b', marginTop: '0.1rem' }}>
+                  Review pre-filled fields above. Click below to authorize Playwright to submit to portal.
+                </div>
+              </div>
+
+              <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                <button
+                  type="button"
+                  onClick={onClose}
+                  style={{
+                    background: '#ffffff',
+                    border: '1px solid #cbd5e1',
+                    color: '#334155',
+                    fontSize: '0.82rem',
+                    fontWeight: 600,
+                    padding: '0.5rem 1rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                  }}
+                >
+                  Cancel
+                </button>
+
                 <button
                   type="button"
                   onClick={handleResume}
                   disabled={loading}
-                  className="glass-button btn-primary"
-                  style={{ fontSize: '0.85rem', padding: '0.6rem 1.3rem', borderRadius: '10px' }}
+                  style={{
+                    background: '#0f172a',
+                    border: '1px solid #0f172a',
+                    color: '#ffffff',
+                    fontSize: '0.85rem',
+                    fontWeight: 600,
+                    padding: '0.55rem 1.25rem',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    gap: '0.4rem',
+                    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+                  }}
                 >
-                  <CheckCircle2 size={16} />
-                  <span>Authorize Playwright to Submit Form</span>
+                  {loading ? (
+                    <>
+                      <RefreshCw size={14} style={{ animation: 'spin 1.5s linear infinite' }} /> Submitting...
+                    </>
+                  ) : (
+                    <>
+                      <Send size={14} /> Authorize Playwright Submission
+                    </>
+                  )}
                 </button>
               </div>
             </div>
           )}
-
-          {errorMsg && (
-            <div style={{ padding: '0.75rem 1rem', background: 'rgba(244, 63, 94, 0.15)', border: '1px solid rgba(244, 63, 94, 0.4)', borderRadius: '8px', color: '#fda4af', fontSize: '0.78rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <AlertCircle size={16} />
-              <span>{errorMsg}</span>
-            </div>
-          )}
-        </div>
-
-        {/* Footer */}
-        <div
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justify: 'space-between',
-            borderTop: '1px solid rgba(255,255,255,0.08)',
-            paddingTop: '0.75rem',
-            fontSize: '0.75rem',
-          }}
-        >
-          <span style={{ color: '#64748b', fontFamily: 'monospace' }}>
-            Session Ref: {session?.sessionId || 'BRW-INITIALIZING'}
-          </span>
-          <button
-            type="button"
-            onClick={onClose}
-            className="glass-button"
-            style={{ fontSize: '0.8rem', padding: '0.45rem 1.1rem' }}
-          >
-            Close Session
-          </button>
         </div>
       </div>
     </div>

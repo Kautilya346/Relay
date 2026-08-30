@@ -172,6 +172,18 @@ export async function fetchIncidentTimeline(
   }
 }
 
+export async function fetchAllAuditEvents(): Promise<AuditEvent[]> {
+  try {
+    const res = await fetch(`${API_BASE_URL}/audit/events`);
+    if (!res.ok) throw new Error('API failed');
+    const data = await res.json();
+    return data.events || [];
+  } catch {
+    return [];
+  }
+}
+
+
 export async function fetchPolicyConfig(): Promise<EscalationPolicyConfig | null> {
   try {
     const res = await fetch(`${API_BASE_URL}/admin/policies`);
@@ -268,18 +280,21 @@ export async function classifyIntent(message: string) {
 }
 
 export async function startBrowserSession(incidentId: string, authorityId: string = 'RAJ_SAMPARK') {
-  try {
-    const res = await fetch(`${API_BASE_URL}/browser/session/start`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ incidentId, authorityId }),
-    });
-    if (!res.ok) throw new Error('API failed');
-    const data = await res.json();
-    return data.session;
-  } catch {
-    return null;
+  const res = await fetch(`${API_BASE_URL}/browser/session/start`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ incidentId, authorityId }),
+  });
+  if (!res.ok) {
+    let detail = 'Browser worker failed to start.';
+    try {
+      const errData = await res.json();
+      if (errData?.detail) detail = errData.detail;
+    } catch { /* ignore */ }
+    throw new Error(detail);
   }
+  const data = await res.json();
+  return data.session;
 }
 
 export async function resumeBrowserSession(sessionId: string, inputKey: string = '', inputValue: string = '') {
@@ -310,5 +325,23 @@ export async function discoverPortal(location: string, category: string = 'Road 
     return null;
   }
 }
+
+export async function uploadEvidenceFile(file: File): Promise<string | null> {
+  try {
+    const formData = new FormData();
+    formData.append('file', file);
+    const res = await fetch(`${API_BASE_URL}/complaints/upload-evidence`, {
+      method: 'POST',
+      body: formData,
+    });
+    if (!res.ok) throw new Error('Upload failed');
+    const data = await res.json();
+    return data.gcsUrl || null;
+  } catch (err) {
+    console.error('Evidence upload error:', err);
+    return null;
+  }
+}
+
 
 

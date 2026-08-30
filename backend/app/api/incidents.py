@@ -46,6 +46,13 @@ async def get_incident_timeline(incident_id: str):
     return TimelineResponse(success=True, incidentId=incident_id, events=events)
 
 
+@router.get("/audit/events")
+async def get_all_audit_events():
+    events = db.list_audit_events()
+    return {"success": True, "count": len(events), "events": events}
+
+
+
 @router.get("/incidents/{incident_id}/composed-complaint")
 async def get_composed_complaint(incident_id: str):
     from app.services.complaint_composer import compose_evidence_based_complaint
